@@ -2,26 +2,30 @@ import { useState, useEffect } from 'react'
 import { Card } from "@/components/ui/card"
 import { MessageCircle, Twitter } from "lucide-react"
 import { cn } from '@/lib/utils'
+import { useNavigate } from 'react-router-dom'
 
 interface AgentCardProps {
+  id: string
   name: string
   telegram?: string
   twitter?: string
-  marketCap: string
+  marketCapValue: number
   photo: string
   description: string
   isBumped?: boolean
 }
 
 export function AgentCard({
+  id,
   name,
   telegram,
   twitter,
-  marketCap,
+  marketCapValue,
   photo,
   description,
   isBumped
 }: AgentCardProps) {
+  const navigate = useNavigate()
   const [isAnimating, setIsAnimating] = useState(false)
 
   useEffect(() => {
@@ -37,10 +41,11 @@ export function AgentCard({
   return (
     <Card
       className={cn(
-        "agent-card",
+        "agent-card cursor-pointer hover:border-primary/50 transition-colors",
         isAnimating && "bump-animation",
         "border transition-all"
       )}
+      onClick={() => navigate(`/agent/${id}`)}
     >
       {/* Agent Photo */}
       <div className="h-40">
@@ -62,6 +67,7 @@ export function AgentCard({
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary"
+                onClick={(e) => e.stopPropagation()}
               >
                 <MessageCircle className="h-4 w-4" />
               </a>
@@ -72,6 +78,7 @@ export function AgentCard({
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary"
+                onClick={(e) => e.stopPropagation()}
               >
                 <Twitter className="h-4 w-4" />
               </a>
@@ -79,7 +86,7 @@ export function AgentCard({
           </div>
         </div>
         <div className="text-sm font-medium">
-          Market Cap: {marketCap}
+          Market Cap: ${marketCapValue.toLocaleString()}
         </div>
         <p className="text-xs text-muted-foreground">
           {description}

@@ -8,7 +8,6 @@ import { UploadDropzone } from "@/components/ui/upload-dropzone"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { AgentCard } from '@/components/AgentCard'
 import { MessageCircle, Twitter } from "lucide-react"
 
 interface TwitterConfig {
@@ -481,20 +480,7 @@ function LaunchPage() {
             </Button>
           </div>
 
-          <div className="space-y-8">
-            {agents.map((agent) => (
-              <AgentCard 
-                key={agent.id}
-                name={agent.name}
-                telegram={agent.telegram}
-                twitter={agent.twitter}
-                marketCap={agent.marketCap}
-                photo={agent.photo}
-                description={agent.description}
-                isBumped={agent.bumpedAt === Math.max(...agents.map(a => a.bumpedAt || 0))}
-              />
-            ))}
-          </div>
+
         </div>
       </div>
     </div>

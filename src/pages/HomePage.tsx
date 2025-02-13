@@ -11,179 +11,7 @@ import {
 } from "@/components/ui/select"
 import { useState } from "react"
 import { AgentCard } from "@/components/AgentCard"
-
-interface Agent {
-  name: string
-  telegram?: string
-  twitter?: string
-  marketCap: string
-  marketCapValue: number
-  photo: string
-  description: string
-  createdAt: Date
-  bumpCount: number
-}
-
-const agents: Agent[] = [
-  {
-    name: "Agent 1",
-    telegram: "https://t.me/agent1",
-    twitter: "https://twitter.com/agent1",
-    marketCap: "$1.2M",
-    marketCapValue: 1200000,
-    photo: "https://placehold.co/400x400/1a1a1a/ffffff?text=Agent+1",
-    description: "A powerful AI agent specialized in market analysis and trading strategies.",
-    createdAt: new Date('2024-03-15'),
-    bumpCount: 25
-  },
-  {
-    name: "Agent 2",
-    telegram: "https://t.me/agent2",
-    marketCap: "$800K",
-    marketCapValue: 800000,
-    photo: "https://placehold.co/400x400/1a1a1a/ffffff?text=Agent+2",
-    description: "Expert in blockchain technology and smart contract development.",
-    createdAt: new Date('2024-03-15'),
-    bumpCount: 20
-  },
-  {
-    name: "Agent 3",
-    telegram: "https://t.me/agent3",
-    twitter: "https://twitter.com/agent3",
-    marketCap: "$2.1M",
-    marketCapValue: 2100000,
-    photo: "https://placehold.co/400x400/1a1a1a/ffffff?text=Agent+3",
-    description: "Specialized in DeFi protocols and yield optimization.",
-    createdAt: new Date('2024-03-15'),
-    bumpCount: 25
-  },
-  {
-    name: "Agent 4",
-    telegram: "https://t.me/agent4",
-    marketCap: "$1.5M",
-    marketCapValue: 1500000,
-    photo: "https://placehold.co/400x400/1a1a1a/ffffff?text=Agent+4",
-    description: "NFT market analysis and trading strategies.",
-    createdAt: new Date('2024-03-15'),
-    bumpCount: 20
-  },
-  {
-    name: "Agent 5",
-    telegram: "https://t.me/agent5",
-    twitter: "https://twitter.com/agent5",
-    marketCap: "$900K",
-    marketCapValue: 900000,
-    photo: "https://placehold.co/400x400/1a1a1a/ffffff?text=Agent+5",
-    description: "Cryptocurrency market trends and analysis.",
-    createdAt: new Date('2024-03-15'),
-    bumpCount: 20
-  },
-  {
-    name: "Agent 6",
-    telegram: "https://t.me/agent6",
-    marketCap: "$1.8M",
-    marketCapValue: 1800000,
-    photo: "https://placehold.co/400x400/1a1a1a/ffffff?text=Agent+6",
-    description: "AI-powered trading bot with advanced algorithms.",
-    createdAt: new Date('2024-03-15'),
-    bumpCount: 25
-  },
-  {
-    name: "Agent 7",
-    telegram: "https://t.me/agent7",
-    twitter: "https://twitter.com/agent7",
-    marketCap: "$2.5M",
-    marketCapValue: 2500000,
-    photo: "https://placehold.co/400x400/1a1a1a/ffffff?text=Agent+7",
-    description: "Cross-chain bridge optimization specialist.",
-    createdAt: new Date('2024-03-15'),
-    bumpCount: 25
-  },
-  {
-    name: "Agent 8",
-    telegram: "https://t.me/agent8",
-    marketCap: "$1.3M",
-    marketCapValue: 1300000,
-    photo: "https://placehold.co/400x400/1a1a1a/ffffff?text=Agent+8",
-    description: "Liquidity pool management and yield farming expert.",
-    createdAt: new Date('2024-03-15'),
-    bumpCount: 20
-  },
-  {
-    name: "Agent 9",
-    telegram: "https://t.me/agent9",
-    twitter: "https://twitter.com/agent9",
-    marketCap: "$1.7M",
-    marketCapValue: 1700000,
-    photo: "https://placehold.co/400x400/1a1a1a/ffffff?text=Agent+9",
-    description: "Arbitrage opportunities finder across DEXs.",
-    createdAt: new Date('2024-03-15'),
-    bumpCount: 20
-  },
-  {
-    name: "Agent 10",
-    telegram: "https://t.me/agent10",
-    marketCap: "$2.2M",
-    marketCapValue: 2200000,
-    photo: "https://placehold.co/400x400/1a1a1a/ffffff?text=Agent+10",
-    description: "Smart contract security analysis specialist.",
-    createdAt: new Date('2024-03-15'),
-    bumpCount: 25
-  },
-  {
-    name: "Agent 11",
-    telegram: "https://t.me/agent11",
-    twitter: "https://twitter.com/agent11",
-    marketCap: "$1.6M",
-    marketCapValue: 1600000,
-    photo: "https://placehold.co/400x400/1a1a1a/ffffff?text=Agent+11",
-    description: "Governance proposal analyzer and voter.",
-    createdAt: new Date('2024-03-15'),
-    bumpCount: 20
-  },
-  {
-    name: "Agent 12",
-    telegram: "https://t.me/agent12",
-    marketCap: "$1.9M",
-    marketCapValue: 1900000,
-    photo: "https://placehold.co/400x400/1a1a1a/ffffff?text=Agent+12",
-    description: "MEV protection and frontrunning detection.",
-    createdAt: new Date('2024-03-15'),
-    bumpCount: 20
-  },
-  {
-    name: "Agent 13",
-    telegram: "https://t.me/agent13",
-    twitter: "https://twitter.com/agent13",
-    marketCap: "$2.3M",
-    marketCapValue: 2300000,
-    photo: "https://placehold.co/400x400/1a1a1a/ffffff?text=Agent+13",
-    description: "On-chain data analysis and pattern recognition.",
-    createdAt: new Date('2024-03-15'),
-    bumpCount: 25
-  },
-  {
-    name: "Agent 14",
-    telegram: "https://t.me/agent14",
-    marketCap: "$1.4M",
-    marketCapValue: 1400000,
-    photo: "https://placehold.co/400x400/1a1a1a/ffffff?text=Agent+14",
-    description: "Gas optimization and transaction timing specialist.",
-    createdAt: new Date('2024-03-15'),
-    bumpCount: 20
-  },
-  {
-    name: "Agent 15",
-    telegram: "https://t.me/agent15",
-    twitter: "https://twitter.com/agent15",
-    marketCap: "$2.0M",
-    marketCapValue: 2000000,
-    photo: "https://placehold.co/400x400/1a1a1a/ffffff?text=Agent+15",
-    description: "Token launch and IDO participation expert.",
-    createdAt: new Date('2024-03-15'),
-    bumpCount: 20
-  }
-]
+import { agents } from "@/store/agents"
 
 type SortOption = 'bump' | 'marketCap' | 'created'
 
@@ -199,8 +27,6 @@ function HomePage() {
     )
     .sort((a, b) => {
       switch (sortBy) {
-        case 'bump':
-          return b.bumpCount - a.bumpCount
         case 'marketCap':
           return b.marketCapValue - a.marketCapValue
         case 'created':
@@ -263,10 +89,11 @@ function HomePage() {
             {filteredAndSortedAgents.map((agent, index) => (
               <AgentCard 
                 key={index}
+                id={agent.id}
                 name={agent.name}
                 telegram={agent.telegram}
                 twitter={agent.twitter}
-                marketCap={agent.marketCap}
+                marketCapValue={agent.marketCapValue}
                 photo={agent.photo}
                 description={agent.description}
               />
