@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Copy, MessageCircle, Twitter, ArrowLeft } from "lucide-react"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { agents } from "@/store/agents"

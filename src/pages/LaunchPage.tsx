@@ -20,17 +20,6 @@ interface TelegramConfig {
   bot_secret: string
 }
 
-interface Agent {
-  id: string
-  name: string
-  telegram?: string
-  twitter?: string
-  marketCap: string
-  photo: string
-  description: string
-  bumpedAt?: number
-}
-
 interface Person {
   name: string
   platforms: string[]
@@ -51,8 +40,6 @@ function LaunchPage() {
   })
   const [twitterStyles, setTwitterStyles] = useState<string[]>([''])
   const [telegramStyles, setTelegramStyles] = useState<string[]>([''])
-  const [agents, setAgents] = useState<Agent[]>([])
-  const [filterMode, setFilterMode] = useState<'bump' | 'default'>('default')
 
   const addInput = (setter: React.Dispatch<React.SetStateAction<string[]>>) => {
     setter(prev => {
@@ -84,21 +71,6 @@ function LaunchPage() {
     })
   }
 
-  const handleBump = (agentId: string) => {
-    if (filterMode === 'bump') {
-      setAgents(prev => {
-        const newAgents = [...prev]
-        const agentIndex = newAgents.findIndex(a => a.id === agentId)
-        if (agentIndex > -1) {
-          const agent = newAgents[agentIndex]
-          agent.bumpedAt = Date.now()
-          newAgents.splice(agentIndex, 1)
-          newAgents.unshift(agent)
-        }
-        return newAgents
-      })
-    }
-  }
 
   const handlePeopleInputChange = (
     index: number,
