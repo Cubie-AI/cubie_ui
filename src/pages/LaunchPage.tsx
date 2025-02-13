@@ -3,11 +3,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Minus, Rocket } from "lucide-react"
+import { Plus, Minus, Rocket, ArrowLeft } from "lucide-react"
 import { UploadDropzone } from "@/components/ui/upload-dropzone"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { AgentCard } from '@/components/AgentCard'
+import { MessageCircle, Twitter } from "lucide-react"
 
 interface TwitterConfig {
   username: string
@@ -19,9 +21,25 @@ interface TelegramConfig {
   bot_secret: string
 }
 
+interface Agent {
+  id: string
+  name: string
+  telegram?: string
+  twitter?: string
+  marketCap: string
+  photo: string
+  description: string
+  bumpedAt?: number
+}
+
+interface Person {
+  name: string
+  platforms: string[]
+}
+
 function LaunchPage() {
   const [knowledgeInputs, setKnowledgeInputs] = useState<string[]>([''])
-  const [peopleInputs, setPeopleInputs] = useState<string[]>([''])
+  const [peopleInputs, setPeopleInputs] = useState<Person[]>([{ name: '', platforms: [] }])
   const [styleInputs, setStyleInputs] = useState<string[]>([''])
   const [enabledPlatforms, setEnabledPlatforms] = useState<string[]>([])
   const [twitterConfig, setTwitterConfig] = useState<TwitterConfig>({
@@ -34,6 +52,8 @@ function LaunchPage() {
   })
   const [twitterStyles, setTwitterStyles] = useState<string[]>([''])
   const [telegramStyles, setTelegramStyles] = useState<string[]>([''])
+  const [agents, setAgents] = useState<Agent[]>([])
+  const [filterMode, setFilterMode] = useState<'bump' | 'default'>('default')
 
   const addInput = (setter: React.Dispatch<React.SetStateAction<string[]>>) => {
     setter(prev => {
@@ -65,9 +85,67 @@ function LaunchPage() {
     })
   }
 
+  const handleBump = (agentId: string) => {
+    if (filterMode === 'bump') {
+      setAgents(prev => {
+        const newAgents = [...prev]
+        const agentIndex = newAgents.findIndex(a => a.id === agentId)
+        if (agentIndex > -1) {
+          const agent = newAgents[agentIndex]
+          agent.bumpedAt = Date.now()
+          newAgents.splice(agentIndex, 1)
+          newAgents.unshift(agent)
+        }
+        return newAgents
+      })
+    }
+  }
+
+  const handlePeopleInputChange = (
+    index: number,
+    value: string | string[],
+    field: keyof Person
+  ) => {
+    setPeopleInputs(prev => {
+      const newInputs = [...prev]
+      newInputs[index] = {
+        ...newInputs[index],
+        [field]: value
+      }
+      return newInputs
+    })
+  }
+
+  const addPerson = () => {
+    setPeopleInputs(prev => {
+      if (prev.length < 10) {
+        return [...prev, { name: '', platforms: [] }]
+      }
+      return prev
+    })
+  }
+
+  const removePerson = (index: number) => {
+    setPeopleInputs(prev => {
+      if (prev.length > 1) {
+        return prev.filter((_, i) => i !== index)
+      }
+      return prev
+    })
+  }
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-4xl mx-auto space-y-8">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-4 left-4 md:top-8 md:left-8"
+          onClick={() => window.history.back()}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+
         <h1 className="text-3xl font-bold text-center">Launch Agent</h1>
         
         <div className="space-y-8">
@@ -96,8 +174,16 @@ function LaunchPage() {
               <div className="flex-1">
                 <div className="h-full flex flex-col">
                   <div className="space-y-3 mb-4">
-                    <Label htmlFor="name">Name</Label>
-                    <Input id="name" placeholder="CubieCubed" />
+                    <div className="flex gap-4">
+                      <div className="flex-1">
+                        <Label htmlFor="name">Name</Label>
+                        <Input id="name" placeholder="CubieCubed" />
+                      </div>
+                      <div className="w-32">
+                        <Label htmlFor="ticker">Ticker</Label>
+                        <Input id="ticker" placeholder="CUBIE" className="font-mono uppercase" />
+                      </div>
+                    </div>
                   </div>
                   
                   <div className="flex-1 flex flex-col space-y-3">
@@ -154,32 +240,49 @@ function LaunchPage() {
               <div className="space-y-3">
                 <Label>People</Label>
                 {peopleInputs.map((input, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      value={input}
-                      onChange={(e) => handleInputChange(index, e.target.value, setPeopleInputs)}
-                      placeholder={`Person ${index + 1}`}
-                    />
-                    {index === peopleInputs.length - 1 && peopleInputs.length < 10 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => addInput(setPeopleInputs)}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    )}
-                    {peopleInputs.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => removeInput(index, setPeopleInputs)}
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                    )}
+                  <div key={index} className="flex gap-4 items-center">
+                    <ToggleGroup
+                      type="multiple"
+                      value={input.platforms}
+                      onValueChange={(value) => handlePeopleInputChange(index, value, 'platforms')}
+                      className="flex"
+                      variant="outline"
+                    >
+                      <ToggleGroupItem value="twitter" size="sm" >
+                        <Twitter className="h-4 w-4" />
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="telegram" size="sm" >
+                        <MessageCircle className="h-4 w-4" />
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                    
+                    <div className="flex gap-2 flex-1">
+                      <Input
+                        value={input.name}
+                        onChange={(e) => handlePeopleInputChange(index, e.target.value, 'name')}
+                        placeholder={`Person ${index + 1}`}
+                      />
+                      {index === peopleInputs.length - 1 && peopleInputs.length < 10 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={addPerson}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {peopleInputs.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => removePerson(index)}
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -376,6 +479,21 @@ function LaunchPage() {
               <Rocket className="h-5 w-5" />
               Launch
             </Button>
+          </div>
+
+          <div className="space-y-8">
+            {agents.map((agent) => (
+              <AgentCard 
+                key={agent.id}
+                name={agent.name}
+                telegram={agent.telegram}
+                twitter={agent.twitter}
+                marketCap={agent.marketCap}
+                photo={agent.photo}
+                description={agent.description}
+                isBumped={agent.bumpedAt === Math.max(...agents.map(a => a.bumpedAt || 0))}
+              />
+            ))}
           </div>
         </div>
       </div>

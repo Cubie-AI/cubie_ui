@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react'
 import { Card } from "@/components/ui/card"
 import { MessageCircle, Twitter } from "lucide-react"
+import { cn } from '@/lib/utils'
 
 interface AgentCardProps {
   name: string
@@ -8,6 +10,7 @@ interface AgentCardProps {
   marketCap: string
   photo: string
   description: string
+  isBumped?: boolean
 }
 
 export function AgentCard({
@@ -16,10 +19,29 @@ export function AgentCard({
   twitter,
   marketCap,
   photo,
-  description
+  description,
+  isBumped
 }: AgentCardProps) {
+  const [isAnimating, setIsAnimating] = useState(false)
+
+  useEffect(() => {
+    if (isBumped) {
+      setIsAnimating(true)
+      const timer = setTimeout(() => {
+        setIsAnimating(false)
+      }, 1000) // Match this with the total animation duration
+      return () => clearTimeout(timer)
+    }
+  }, [isBumped])
+
   return (
-    <Card className="flex flex-col bg-secondary overflow-hidden">
+    <Card
+      className={cn(
+        "agent-card",
+        isAnimating && "bump-animation",
+        "border transition-all"
+      )}
+    >
       {/* Agent Photo */}
       <div className="h-40">
         <img 

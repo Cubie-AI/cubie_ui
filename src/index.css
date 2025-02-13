@@ -144,3 +144,32 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Add these keyframes and classes */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+@keyframes glow {
+  0%, 100% { 
+    box-shadow: 0 0 5px #00ff9d,
+                0 0 10px #00ff9d,
+                0 0 15px #00ff9d;
+  }
+  50% { 
+    box-shadow: 0 0 10px #00ff9d,
+                0 0 20px #00ff9d,
+                0 0 30px #00ff9d;
+  }
+}
+
+.bump-animation {
+  animation: shake 0.5s ease-in-out, glow 1s ease-in-out;
+}
+
+/* Optional: Add a transition for smooth movement when cards reorder */
+.agent-card {
+  transition: all 0.3s ease-in-out;
+}
