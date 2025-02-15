@@ -9,10 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useEffect, useState } from "react"
+import {  useState } from "react"
 import { AgentCard } from "@/components/AgentCard"
 import { agents } from "@/store/agents"
-import { useWallet } from "@solana/wallet-adapter-react"
 
 type SortOption = 'bump' | 'marketCap' | 'created'
 
@@ -20,7 +19,6 @@ function HomePage() {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('marketCap')
-  const wallet = useWallet();
 
   
   const filteredAndSortedAgents = agents
