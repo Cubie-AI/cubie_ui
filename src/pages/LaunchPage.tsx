@@ -166,32 +166,24 @@ function LaunchPage() {
       const signature = await connection.connection.sendRawTransaction(signedTransaction.serialize(), {
         maxRetries: 5
       })
-      const result = await connection.connection.confirmTransaction({
-        signature: signature,
-        blockhash: transaction.message.recentBlockhash,
-        lastValidBlockHeight: await connection.connection.getBlockHeight()
-      })
-      console.log(result.value);
-      console.log(signature);
-      toast.success(() => <div>
-        <p>Agent launched successfully</p>
-        <a href={'https://pump.fun/coin/' + data.mint} target="_blank">[token]</a>
-        <a href={'https://solscan.io/tx/' + signature} target="_blank">[tx]</a>
-      </div>)
+      
+        toast.success(() => <div>
+          <p>Agent launched successfully</p>
+          <a href={'https://pump.fun/coin/' + data.mint} target="_blank">[token]</a>
+          <a href={'https://solscan.io/tx/' + signature} target="_blank">[tx]</a>
+        </div>)
+
+      
       } catch (error) {
         console.log(error);
+        toast.error('Transaction failed');
         if (error instanceof SendTransactionError) {
           console.log(await error.getLogs(connection.connection))
         }
       }
       
     }
-    console.log(data);
-    if (response.ok) {
-      toast.success("Agent launched successfully");
-    } else {
-      toast.error(data.error);
-    }
+    
   }
 
   const updateSetting = <K extends keyof AgentSettings>(

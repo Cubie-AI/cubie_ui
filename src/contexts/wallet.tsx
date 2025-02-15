@@ -33,7 +33,7 @@ const CubieWalletContext = createContext<WalletContextType>({
 export function useCubieWallet(): [WalletContextState, string | null, ConnectionContextState] {
   const wallet = useWallet();
   const connection = useConnection();
-  const [token, setToken] = useState<string | null>(localStorage.getItem("token") || null);
+  const [token, setToken] = useState<string | null>(localStorage.getItem("jwt") || null);
 
   const signIn = async () => {
     if(!wallet || !wallet.signMessage || !wallet.publicKey) {
