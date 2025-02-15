@@ -25,84 +25,146 @@ interface Person {
   platforms: string[]
 }
 
+interface AgentSettings {
+  name: string
+  ticker: string
+  bio: string
+  knowledge: string[]
+  people: Person[]
+  style: string[]
+  enabledPlatforms: string[]
+  twitterConfig: TwitterConfig
+  telegramConfig: TelegramConfig
+  twitterStyles: string[]
+  telegramStyles: string[]
+  buyAmount: string
+}
+
 function LaunchPage() {
-  const [knowledgeInputs, setKnowledgeInputs] = useState<string[]>([''])
-  const [peopleInputs, setPeopleInputs] = useState<Person[]>([{ name: '', platforms: [] }])
-  const [styleInputs, setStyleInputs] = useState<string[]>([''])
-  const [enabledPlatforms, setEnabledPlatforms] = useState<string[]>([])
-  const [twitterConfig, setTwitterConfig] = useState<TwitterConfig>({
-    username: '',
-    email: '',
-    password: ''
+  const [settings, setSettings] = useState<AgentSettings>({
+    name: '',
+    ticker: '',
+    bio: '',
+    knowledge: [''],
+    people: [{ name: '', platforms: [] }],
+    style: [''],
+    enabledPlatforms: [],
+    twitterConfig: {
+      username: '',
+      email: '',
+      password: ''
+    },
+    telegramConfig: {
+      bot_secret: ''
+    },
+    twitterStyles: [''],
+    telegramStyles: [''],
+    buyAmount: '0.15'
   })
-  const [telegramConfig, setTelegramConfig] = useState<TelegramConfig>({
-    bot_secret: ''
-  })
-  const [twitterStyles, setTwitterStyles] = useState<string[]>([''])
-  const [telegramStyles, setTelegramStyles] = useState<string[]>([''])
-
-  const addInput = (setter: React.Dispatch<React.SetStateAction<string[]>>) => {
-    setter(prev => {
-      if (prev.length < 10) {
-        return [...prev, '']
-      }
-      return prev
+  
+  const submitAgent = async () => {
+    console.log("Submit Agent");
+    const { name, ticker, bio, knowledge, people, style, enabledPlatforms, twitterConfig, telegramConfig, twitterStyles, telegramStyles, buyAmount } = settings
+    const formData = new FormData();
+    formData.append("name", name)
+    formData.append("ticker", ticker)
+    formData.append("bio", bio)
+    knowledge.forEach((input, index) => {
+      formData.append(`knowledge[${index}]`, input)
     })
+    people.forEach((person, index) => {
+      formData.append(`people[${index}]`, JSON.stringify(person))
+    })
+    style.forEach((input, index) => {
+      formData.append(`style[${index}]`, input)
+    })
+    enabledPlatforms.forEach((platform, index) => {
+      formData.append(`enabled_platforms[${index}]`, platform)
+    })
+    formData.append("twitter_config", JSON.stringify(twitterConfig))
+    formData.append("telegram_config", JSON.stringify(telegramConfig))
+    twitterStyles.forEach((input, index) => {
+      formData.append(`twitter_styles[${index}]`, input)
+    })
+    telegramStyles.forEach((input, index) => {
+      formData.append(`telegram_styles[${index}]`, input)
+    })
+    formData.append("buy_amount", buyAmount.toString())
+
+    const response = await fetch("/api/agent/launch", {
+      method: "POST",
+      body: formData
+    })
+
+    const data = await response.json();
+    console.log(data);
   }
 
-  const removeInput = (index: number, setter: React.Dispatch<React.SetStateAction<string[]>>) => {
-    setter(prev => {
-      if (prev.length > 1) {
-        return prev.filter((_, i) => i !== index)
-      }
-      return prev
-    })
-  }
-
-  const handleInputChange = (
-    index: number, 
-    value: string, 
-    setter: React.Dispatch<React.SetStateAction<string[]>>
+  const updateSetting = <K extends keyof AgentSettings>(
+    field: K, 
+    value: AgentSettings[K]
   ) => {
-    setter(prev => {
-      const newInputs = [...prev]
-      newInputs[index] = value
-      return newInputs
-    })
+    setSettings(prev => ({
+      ...prev,
+      [field]: value
+    }))
   }
 
+  const updateArrayField = (
+    field: keyof Pick<AgentSettings, 'knowledge' | 'style' | 'twitterStyles' | 'telegramStyles'>,
+    index: number,
+    value: string
+  ) => {
+    setSettings(prev => ({
+      ...prev,
+      [field]: prev[field].map((item, i) => i === index ? value : item)
+    }))
+  }
+
+  const addArrayItem = (
+    field: keyof Pick<AgentSettings, 'knowledge' | 'style' | 'twitterStyles' | 'telegramStyles'>
+  ) => {
+    setSettings(prev => ({
+      ...prev,
+      [field]: [...prev[field], '']
+    }))
+  }
+
+  const removeArrayItem = (
+    field: keyof Pick<AgentSettings, 'knowledge' | 'style' | 'twitterStyles' | 'telegramStyles'>,
+    index: number
+  ) => {
+    setSettings(prev => ({
+      ...prev,
+      [field]: prev[field].filter((_, i) => i !== index)
+    }))
+  }
 
   const handlePeopleInputChange = (
     index: number,
     value: string | string[],
     field: keyof Person
   ) => {
-    setPeopleInputs(prev => {
-      const newInputs = [...prev]
-      newInputs[index] = {
-        ...newInputs[index],
-        [field]: value
-      }
-      return newInputs
-    })
+    setSettings(prev => ({
+      ...prev,
+      people: prev.people.map((person, i) =>
+        i === index ? { ...person, [field]: value } : person
+      )
+    }))
   }
 
   const addPerson = () => {
-    setPeopleInputs(prev => {
-      if (prev.length < 10) {
-        return [...prev, { name: '', platforms: [] }]
-      }
-      return prev
-    })
+    setSettings(prev => ({
+      ...prev,
+      people: [...prev.people, { name: '', platforms: [] }]
+    }))
   }
 
   const removePerson = (index: number) => {
-    setPeopleInputs(prev => {
-      if (prev.length > 1) {
-        return prev.filter((_, i) => i !== index)
-      }
-      return prev
-    })
+    setSettings(prev => ({
+      ...prev,
+      people: prev.people.filter((_, i) => i !== index)
+    }))
   }
 
   return (
@@ -120,179 +182,194 @@ function LaunchPage() {
         <h1 className="text-3xl font-bold text-center">Launch Agent</h1>
         
         <div className="space-y-8">
-          {/* Top Card - Image and Basic Info */}
+          {/* Single Card for All Inputs */}
           <Card className="p-6 border">
-            <div className="flex flex-col md:flex-row gap-8 h-[300px]">
-              {/* Left Column - Image Upload */}
-              <div className="w-full md:w-64">
-                <div className="h-full flex flex-col">
-                  <Label className="mb-3">Agent Image</Label>
-                  <div className="flex-1 border-2 border-dashed rounded-lg p-4 hover:border-primary/50 transition-colors">
-                    <UploadDropzone 
-                      endpoint="imageUploader"
-                      onClientUploadComplete={(res) => {
-                        console.log("Files: ", res)
-                      }}
-                      onUploadError={(error: Error) => {
-                        console.error("Error: ", error)
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column - Basic Info */}
-              <div className="flex-1">
-                <div className="h-full flex flex-col">
-                  <div className="space-y-3 mb-4">
-                    <div className="flex gap-4">
-                      <div className="flex-1">
-                        <Label htmlFor="name">Name</Label>
-                        <Input id="name" placeholder="CubieCubed" />
-                      </div>
-                      <div className="w-32">
-                        <Label htmlFor="ticker">Ticker</Label>
-                        <Input id="ticker" placeholder="CUBIE" className="font-mono uppercase" />
-                      </div>
+            <CardHeader>
+              <CardTitle>Launch Agent</CardTitle>
+              <CardDescription>Configure your agent's settings and platforms</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-8">
+              {/* Image and Basic Info Section */}
+              <div className="flex flex-col md:flex-row gap-8 h-[300px]">
+                {/* Left Column - Image Upload */}
+                <div className="w-full md:w-64">
+                  <div className="h-full flex flex-col">
+                    <Label className="mb-3">Agent Image</Label>
+                    <div className="flex-1 border-2 border-dashed rounded-lg p-4 hover:border-primary/50 transition-colors">
+                      <UploadDropzone 
+                        endpoint="imageUploader"
+                        onClientUploadComplete={(res) => {
+                          console.log("Files: ", res)
+                        }}
+                        onUploadError={(error: Error) => {
+                          console.error("Error: ", error)
+                        }}
+                      />
                     </div>
                   </div>
-                  
-                  <div className="flex-1 flex flex-col space-y-3">
-                    <Label htmlFor="bio">Bio</Label>
-                    <Textarea 
-                      id="bio" 
-                      placeholder="First social agent built using $MAIAR"
-                      className="flex-1"
-                    />
+                </div>
+
+                {/* Right Column - Basic Info */}
+                <div className="flex-1">
+                  <div className="h-full flex flex-col">
+                    <div className="space-y-3 mb-4">
+                      <div className="flex gap-4">
+                        <div className="flex-1">
+                          <Label htmlFor="name">Name</Label>
+                          <Input
+                            id="name"
+                            value={settings.name}
+                            onChange={(e) => updateSetting('name', e.target.value)}
+                            placeholder="CubieCubed"
+                          />
+                        </div>
+                        <div className="w-32">
+                          <Label htmlFor="ticker">Ticker</Label>
+                          <Input
+                            id="ticker"
+                            value={settings.ticker}
+                            onChange={(e) => updateSetting('ticker', e.target.value)}
+                            placeholder="CUBIE"
+                            className="font-mono uppercase"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex-1 flex flex-col space-y-3">
+                      <Label htmlFor="bio">Bio</Label>
+                      <Textarea 
+                        id="bio"
+                        value={settings.bio}
+                        onChange={(e) => updateSetting('bio', e.target.value)}
+                        placeholder="First social agent built using $MAIAR"
+                        className="flex-1"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </Card>
 
-          {/* Knowledge and People Card */}
-          <Card className="p-6 border">
-            <div className="grid grid-cols-2 gap-4">
-              {/* Knowledge Column */}
-              <div className="space-y-3">
-                <Label>Knowledge</Label>
-                {knowledgeInputs.map((input, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      value={input}
-                      onChange={(e) => handleInputChange(index, e.target.value, setKnowledgeInputs)}
-                      placeholder={`Knowledge ${index + 1}`}
-                    />
-                    {index === knowledgeInputs.length - 1 && knowledgeInputs.length < 10 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => addInput(setKnowledgeInputs)}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    )}
-                    {knowledgeInputs.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => removeInput(index, setKnowledgeInputs)}
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
+              <div className="border-t pt-8" />
 
-              {/* People Column */}
-              <div className="space-y-3">
-                <Label>People</Label>
-                {peopleInputs.map((input, index) => (
-                  <div key={index} className="flex gap-4 items-center">
-                    <ToggleGroup
-                      type="multiple"
-                      value={input.platforms}
-                      onValueChange={(value) => handlePeopleInputChange(index, value, 'platforms')}
-                      className="flex"
-                      variant="outline"
-                    >
-                      <ToggleGroupItem value="twitter" size="sm" >
-                        <Twitter className="h-4 w-4" />
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="telegram" size="sm" >
-                        <MessageCircle className="h-4 w-4" />
-                      </ToggleGroupItem>
-                    </ToggleGroup>
-                    
-                    <div className="flex gap-2 flex-1">
+              {/* Knowledge and People Section */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Knowledge Column */}
+                <div className="space-y-3">
+                  <Label>Knowledge</Label>
+                  {settings.knowledge.map((input, index) => (
+                    <div key={index} className="flex gap-2">
                       <Input
-                        value={input.name}
-                        onChange={(e) => handlePeopleInputChange(index, e.target.value, 'name')}
-                        placeholder={`Person ${index + 1}`}
+                        value={input}
+                        onChange={(e) => updateArrayField('knowledge', index, e.target.value)}
+                        placeholder={`Knowledge ${index + 1}`}
                       />
-                      {index === peopleInputs.length - 1 && peopleInputs.length < 10 && (
+                      {index === settings.knowledge.length - 1 && settings.knowledge.length < 10 && (
                         <Button
                           type="button"
                           variant="outline"
                           size="icon"
-                          onClick={addPerson}
+                          onClick={() => addArrayItem('knowledge')}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
                       )}
-                      {peopleInputs.length > 1 && (
+                      {settings.knowledge.length > 1 && (
                         <Button
                           type="button"
                           variant="outline"
                           size="icon"
-                          onClick={() => removePerson(index)}
+                          onClick={() => removeArrayItem('knowledge', index)}
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Card>
+                  ))}
+                </div>
 
-          {/* Style Card */}
-          <Card className="p-6 border">
-            <CardHeader>
-              <CardTitle>Style & Platform Configuration</CardTitle>
-              <CardDescription>Configure your bot's style and platform settings</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+                {/* People Column */}
+                <div className="space-y-3">
+                  <Label>People</Label>
+                  {settings.people.map((input, index) => (
+                    <div key={index} className="flex gap-4 items-center">
+                      <ToggleGroup
+                        type="multiple"
+                        value={input.platforms}
+                        onValueChange={(value) => handlePeopleInputChange(index, value, 'platforms')}
+                        className="flex"
+                        variant="outline"
+                      >
+                        <ToggleGroupItem value="twitter" size="sm" >
+                          <Twitter className="h-4 w-4" />
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="telegram" size="sm" >
+                          <MessageCircle className="h-4 w-4" />
+                        </ToggleGroupItem>
+                      </ToggleGroup>
+                      
+                      <div className="flex gap-2 flex-1">
+                        <Input
+                          value={input.name}
+                          onChange={(e) => handlePeopleInputChange(index, e.target.value, 'name')}
+                          placeholder={`Person ${index + 1}`}
+                        />
+                        {index === settings.people.length - 1 && settings.people.length < 10 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={addPerson}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {settings.people.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => removePerson(index)}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t pt-8" />
+
+              {/* Style & Platform Section */}
               <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Style & Platform Configuration</h3>
                 <div className="space-y-4">
                   <Label>Shared Style Rules</Label>
-                  {styleInputs.map((input, index) => (
+                  {settings.style.map((input, index) => (
                     <div key={index} className="flex gap-2">
                       <Input
                         value={input}
-                        onChange={(e) => handleInputChange(index, e.target.value, setStyleInputs)}
+                        onChange={(e) => updateArrayField('style', index, e.target.value)}
                         placeholder="Style rules that apply to all platforms"
                       />
-                      {index === styleInputs.length - 1 && styleInputs.length < 10 && (
+                      {index === settings.style.length - 1 && settings.style.length < 10 && (
                         <Button
                           type="button"
                           variant="outline"
                           size="icon"
-                          onClick={() => addInput(setStyleInputs)}
+                          onClick={() => addArrayItem('style')}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
                       )}
-                      {styleInputs.length > 1 && (
+                      {settings.style.length > 1 && (
                         <Button
                           type="button"
                           variant="outline"
                           size="icon"
-                          onClick={() => removeInput(index, setStyleInputs)}
+                          onClick={() => removeArrayItem('style', index)}
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
@@ -304,8 +381,8 @@ function LaunchPage() {
                 <ToggleGroup
                   type="multiple"
                   variant='outline'
-                  value={enabledPlatforms}
-                  onValueChange={setEnabledPlatforms}
+                  value={settings.enabledPlatforms}
+                  onValueChange={(value) => updateSetting('enabledPlatforms', value)}
                   className="grid grid-cols-2 w-full"
                 >
                   <ToggleGroupItem value="twitter" className="">Twitter</ToggleGroupItem>
@@ -314,63 +391,63 @@ function LaunchPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    {enabledPlatforms.includes('twitter') && (
+                    {settings.enabledPlatforms.includes('twitter') && (
                       <div className="space-y-4">
                         <Label>Twitter Configuration</Label>
                         <div className="space-y-2">
                           <Input
                             placeholder="Username"
-                            value={twitterConfig.username}
-                            onChange={(e) => setTwitterConfig(prev => ({
-                              ...prev,
+                            value={settings.twitterConfig.username}
+                            onChange={(e) => updateSetting('twitterConfig', {
+                              ...settings.twitterConfig,
                               username: e.target.value
-                            }))}
+                            })}
                           />
                           <Input
                             placeholder="Email"
                             type="email"
-                            value={twitterConfig.email}
-                            onChange={(e) => setTwitterConfig(prev => ({
-                              ...prev,
+                            value={settings.twitterConfig.email}
+                            onChange={(e) => updateSetting('twitterConfig', {
+                              ...settings.twitterConfig,
                               email: e.target.value
-                            }))}
+                            })}
                           />
                           <Input
                             placeholder="Password"
                             type="password"
-                            value={twitterConfig.password}
-                            onChange={(e) => setTwitterConfig(prev => ({
-                              ...prev,
+                            value={settings.twitterConfig.password}
+                            onChange={(e) => updateSetting('twitterConfig', {
+                              ...settings.twitterConfig,
                               password: e.target.value
-                            }))}
+                            })}
                           />
                         </div>
 
                         <div className="space-y-3">
                           <Label>Twitter Style Rules</Label>
-                          {twitterStyles.map((input, index) => (
+                          {settings.twitterStyles.map((input, index) => (
                             <div key={index} className="flex gap-2">
                               <Input
                                 value={input}
-                                onChange={(e) => handleInputChange(index, e.target.value, setTwitterStyles)}
+                                onChange={(e) => updateArrayField('twitterStyles', index, e.target.value)}
                                 placeholder="e.g., Use emojis sparingly"
                               />
-                              {index === twitterStyles.length - 1 && twitterStyles.length < 10 && (
+                              {index === settings.twitterStyles.length - 1 && settings.twitterStyles.length < 10 && (
                                 <Button
                                   type="button"
                                   variant="outline"
                                   size="icon"
-                                  onClick={() => addInput(setTwitterStyles)}
+                                  onClick={() => addArrayItem('twitterStyles')}
                                 >
                                   <Plus className="h-4 w-4" />
                                 </Button>
                               )}
-                              {twitterStyles.length > 1 && (
+                              {settings.twitterStyles.length > 1 && (
                                 <Button
                                   type="button"
                                   variant="outline"
                                   size="icon"
-                                  onClick={() => removeInput(index, setTwitterStyles)}
+                                  onClick={() => removeArrayItem('twitterStyles', index)}
                                 >
                                   <Minus className="h-4 w-4" />
                                 </Button>
@@ -383,45 +460,45 @@ function LaunchPage() {
                   </div>
 
                   <div>
-                    {enabledPlatforms.includes('telegram') && (
+                    {settings.enabledPlatforms.includes('telegram') && (
                       <div className="space-y-4">
                         <Label>Telegram Configuration</Label>
                         <div className="space-y-2">
                           <Input
                             placeholder="Bot Secret"
-                            value={telegramConfig.bot_secret}
-                            onChange={(e) => setTelegramConfig(prev => ({
-                              ...prev,
+                            value={settings.telegramConfig.bot_secret}
+                            onChange={(e) => updateSetting('telegramConfig', {
+                              ...settings.telegramConfig,
                               bot_secret: e.target.value
-                            }))}
+                            })}
                           />
                         </div>
 
                         <div className="space-y-3">
                           <Label>Telegram Style Rules</Label>
-                          {telegramStyles.map((input, index) => (
+                          {settings.telegramStyles.map((input, index) => (
                             <div key={index} className="flex gap-2">
                               <Input
                                 value={input}
-                                onChange={(e) => handleInputChange(index, e.target.value, setTelegramStyles)}
+                                onChange={(e) => updateArrayField('telegramStyles', index, e.target.value)}
                                 placeholder="e.g., Use markdown formatting"
                               />
-                              {index === telegramStyles.length - 1 && telegramStyles.length < 10 && (
+                              {index === settings.telegramStyles.length - 1 && settings.telegramStyles.length < 10 && (
                                 <Button
                                   type="button"
                                   variant="outline"
                                   size="icon"
-                                  onClick={() => addInput(setTelegramStyles)}
+                                  onClick={() => addArrayItem('telegramStyles')}
                                 >
                                   <Plus className="h-4 w-4" />
                                 </Button>
                               )}
-                              {telegramStyles.length > 1 && (
+                              {settings.telegramStyles.length > 1 && (
                                 <Button
                                   type="button"
                                   variant="outline"
                                   size="icon"
-                                  onClick={() => removeInput(index, setTelegramStyles)}
+                                  onClick={() => removeArrayItem('telegramStyles', index)}
                                 >
                                   <Minus className="h-4 w-4" />
                                 </Button>
@@ -434,11 +511,34 @@ function LaunchPage() {
                   </div>
                 </div>
               </div>
+
+              <div className="border-t pt-8" />
+
+              {/* Buy Amount Section */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold">Buy Amount</h3>
+                  <p className="text-sm text-muted-foreground">Enter the amount of SOL you want to spend</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="buyAmount">Buy</Label>
+                  <Input
+                    id="buyAmount"
+                    value={settings.buyAmount}
+                    onChange={(e) => updateSetting('buyAmount', e.target.value)}
+                    placeholder="0.15"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    className="max-w-[200px]"
+                  />
+                </div>
+              </div>
             </CardContent>
           </Card>
 
           {/* Launch Button */}
-          <div className="flex justify-center pt-4">
+          <div className="flex justify-center">
             <Button 
               size="lg"
               className={cn(
@@ -446,13 +546,12 @@ function LaunchPage() {
                 "px-8 py-6 text-lg shadow-lg",
                 "flex items-center gap-2"
               )}
+              onClick={submitAgent}
             >
               <Rocket className="h-5 w-5" />
               Launch
             </Button>
           </div>
-
-
         </div>
       </div>
     </div>
