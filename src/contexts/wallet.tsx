@@ -1,15 +1,9 @@
 import { clusterApiUrl, Transaction } from "@solana/web3.js";
-import { createContext, use, useContext, useEffect, useMemo, useState } from "react";
+import { createContext,  useMemo, useState } from "react";
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
-import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
-import {
-    UnsafeBurnerWalletAdapter
-} from '@solana/wallet-adapter-wallets';
 import {
     WalletModalProvider,
-    WalletDisconnectButton,
     WalletMultiButton, 
-    WalletModalButton
 } from '@solana/wallet-adapter-react-ui';
 import "@solana/wallet-adapter-react-ui/styles.css"
 import { Button } from "@/components/ui/button"
@@ -27,10 +21,10 @@ const CubieWalletContext = createContext<WalletContextType>({
   wallet: null,
   connect: async () => {},
   disconnect: async () => {},
-  signMessage: async (message: string) => {
+  signMessage: async () => {
     throw new Error("Not implemented");
   },
-  signTransaction: async (transaction: Transaction) => {
+  signTransaction: async () => {
     throw new Error("Not implemented");
   },
 });
@@ -43,10 +37,12 @@ export function CubieWalletProvider({ children }: { children: React.ReactNode })
   const disconnect = async () => {};
 
   const signMessage = async (message: string) => {
+    console.log("signMessage", message);
     throw new Error("Not implemented");
   };
 
   const signTransaction = async (transaction: Transaction) => {
+    console.log("signTransaction", transaction);
     throw new Error("Not implemented");
   };
 
