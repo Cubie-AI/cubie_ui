@@ -38,6 +38,7 @@ interface AgentSettings {
   twitterStyles: string[]
   telegramStyles: string[]
   buyAmount: string
+  image?: File
 }
 
 function LaunchPage() {
@@ -59,12 +60,13 @@ function LaunchPage() {
     },
     twitterStyles: [''],
     telegramStyles: [''],
-    buyAmount: '0.15'
+    buyAmount: '0.15',
+    image: undefined
   })
   
   const submitAgent = async () => {
     console.log("Submit Agent");
-    const { name, ticker, bio, knowledge, people, style, enabledPlatforms, twitterConfig, telegramConfig, twitterStyles, telegramStyles, buyAmount } = settings
+    const { name, ticker, bio, knowledge, people, style, enabledPlatforms, twitterConfig, telegramConfig, twitterStyles, telegramStyles, buyAmount, image } = settings
     const formData = new FormData();
     formData.append("name", name)
     formData.append("ticker", ticker)
@@ -90,6 +92,10 @@ function LaunchPage() {
       formData.append(`telegram_styles[${index}]`, input)
     })
     formData.append("buy_amount", buyAmount.toString())
+
+    if (image) {
+      formData.append("image", image)
+    }
 
     const response = await fetch("/api/agent/launch", {
       method: "POST",
@@ -167,6 +173,10 @@ function LaunchPage() {
     }))
   }
 
+  const handleImageSelect = (file: File) => {
+    updateSetting('image', file)
+  }
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-4xl mx-auto space-y-8">
@@ -197,13 +207,8 @@ function LaunchPage() {
                     <Label className="mb-3">Agent Image</Label>
                     <div className="flex-1 border-2 border-dashed rounded-lg p-4 hover:border-primary/50 transition-colors">
                       <UploadDropzone 
-                        endpoint="imageUploader"
-                        onClientUploadComplete={(res) => {
-                          console.log("Files: ", res)
-                        }}
-                        onUploadError={(error: Error) => {
-                          console.error("Error: ", error)
-                        }}
+                        onFileSelect={handleImageSelect}
+                        currentImage={settings.image ? URL.createObjectURL(settings.image) : undefined}
                       />
                     </div>
                   </div>

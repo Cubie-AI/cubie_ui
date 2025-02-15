@@ -173,3 +173,10 @@
 .agent-card {
   transition: all 0.3s ease-in-out;
 }
+
+.wallet-adapter-button-trigger {
+  all: unset !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+}

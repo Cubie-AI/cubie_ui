@@ -1,12 +1,19 @@
 import { clusterApiUrl, Transaction } from "@solana/web3.js";
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, use, useContext, useEffect, useMemo, useState } from "react";
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import {
+    UnsafeBurnerWalletAdapter
+} from '@solana/wallet-adapter-wallets';
+import {
     WalletModalProvider,
     WalletDisconnectButton,
-    WalletMultiButton
+    WalletMultiButton, 
+    WalletModalButton
 } from '@solana/wallet-adapter-react-ui';
+import "@solana/wallet-adapter-react-ui/styles.css"
+import { Button } from "@/components/ui/button"
+
 
 interface WalletContextType {
   wallet: string | null;
@@ -43,30 +50,27 @@ export function CubieWalletProvider({ children }: { children: React.ReactNode })
     throw new Error("Not implemented");
   };
 
-  const network = WalletAdapterNetwork.Devnet;
- 
-    // You can also provide a custom RPC endpoint.
-    const endpoint = useMemo(() => clusterApiUrl(network), [network]);
- 
-    const supportedWallets = useMemo(() => [], [network]);
-  
+  const endpoint = clusterApiUrl("devnet");
+  const supportedWallets = useMemo(() => [], []);
+
+
   return (
     <CubieWalletContext.Provider
       value={{ wallet, connect, disconnect, signMessage, signTransaction }}
     >
       <ConnectionProvider endpoint={endpoint}>
-            <WalletProvider wallets={supportedWallets }>
-                <WalletModalProvider>
-                    <WalletMultiButton />
-                    <WalletDisconnectButton />
-      {children}
-                </WalletModalProvider>
-            </WalletProvider>
-        </ConnectionProvider>
+        <WalletProvider wallets={supportedWallets} autoConnect={true}>
+          <WalletModalProvider>
+            <div className="absolute top-4 right-4 md:top-8 md:right-8">
+              <Button variant="outline" className="font-normal h-auto w-auto px-4 py-2">
+                <WalletMultiButton />
+              </Button>
+            </div>
+            {children}
+          </WalletModalProvider>
+        </WalletProvider>
+      </ConnectionProvider>
     </CubieWalletContext.Provider>
   );
 }
 
-export function useWallet() {
-  return useContext(CubieWalletContext);
-}
