@@ -9,6 +9,10 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { cn } from "@/lib/utils"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { MessageCircle, Twitter } from "lucide-react"
+import { useCubieWallet } from "@/contexts/wallet"
+import { toast } from "sonner"
+import { SendTransactionError, VersionedTransaction } from "@solana/web3.js"
+import { Buffer } from "buffer"
 
 interface TwitterConfig {
   username: string
@@ -18,6 +22,7 @@ interface TwitterConfig {
 
 interface TelegramConfig {
   bot_secret: string
+  username: string
 }
 
 interface Person {
@@ -42,6 +47,7 @@ interface AgentSettings {
 }
 
 function LaunchPage() {
+  const [wallet, token, connection] = useCubieWallet();
   const [settings, setSettings] = useState<AgentSettings>({
     name: '',
     ticker: '',
@@ -56,7 +62,8 @@ function LaunchPage() {
       password: ''
     },
     telegramConfig: {
-      bot_secret: ''
+      bot_secret: '',
+      username: ''
     },
     twitterStyles: [''],
     telegramStyles: [''],
@@ -66,44 +73,125 @@ function LaunchPage() {
   
   const submitAgent = async () => {
     console.log("Submit Agent");
+    if (!wallet || !wallet.publicKey || !wallet.signTransaction) {
+      toast.error("Wallet not connected");
+      return;
+    }
     const { name, ticker, bio, knowledge, people, style, enabledPlatforms, twitterConfig, telegramConfig, twitterStyles, telegramStyles, buyAmount, image } = settings
     const formData = new FormData();
+
+    if (!name) {
+      toast.error("Name is required");
+      return;
+    }
+    if (!ticker) {
+      toast.error("Ticker is required");
+      return;
+    }
+    if (!bio) {
+      toast.error("Bio is required");
+      return;
+    }
+    if (!buyAmount) {
+      toast.error("Buy amount is required");
+      return;
+    }
+    console.log(enabledPlatforms);
     formData.append("name", name)
     formData.append("ticker", ticker)
     formData.append("bio", bio)
-    knowledge.forEach((input, index) => {
-      formData.append(`knowledge[${index}]`, input)
-    })
-    people.forEach((person, index) => {
-      formData.append(`people[${index}]`, JSON.stringify(person))
-    })
-    style.forEach((input, index) => {
-      formData.append(`style[${index}]`, input)
-    })
-    enabledPlatforms.forEach((platform, index) => {
-      formData.append(`enabled_platforms[${index}]`, platform)
-    })
-    formData.append("twitter_config", JSON.stringify(twitterConfig))
-    formData.append("telegram_config", JSON.stringify(telegramConfig))
-    twitterStyles.forEach((input, index) => {
-      formData.append(`twitter_styles[${index}]`, input)
-    })
-    telegramStyles.forEach((input, index) => {
-      formData.append(`telegram_styles[${index}]`, input)
-    })
-    formData.append("buy_amount", buyAmount.toString())
+    formData.append("owner", wallet.publicKey.toBase58())
+   
+    
+
+    formData.append("devBuy", buyAmount.toString())
 
     if (image) {
       formData.append("image", image)
     }
 
+    // optional fields
+     if (knowledge.length > 0) {
+    knowledge.forEach((input, index) => {
+      formData.append(`knowledge[${index}]`, input)
+    })}
+    if (people.length > 0) {
+    people.forEach((person, index) => {
+      formData.append(`people[${index}]`, JSON.stringify(person))
+    })}
+    if (style.length > 0) {
+    style.forEach((input, index) => {
+      formData.append(`style[${index}]`, input)
+    })}
+    if (enabledPlatforms.includes('twitter') && twitterConfig.username && twitterConfig.email && twitterConfig.password) {
+    formData.append("twitterConfig", JSON.stringify(twitterConfig)) }
+    else if (enabledPlatforms.includes('twitter')) {
+      toast.error("Populate all twitter config fields");
+      return;
+    }
+    if ('telegram' in enabledPlatforms && telegramConfig.bot_secret) {
+    formData.append("telegramConfig", JSON.stringify(telegramConfig))
+    }
+    else if (enabledPlatforms.includes('telegram')) {
+      toast.error("Populate all telegram config fields");
+      return;
+    }
+    if (twitterStyles.length > 0) {
+    twitterStyles.forEach((input, index) => {
+      formData.append(`twitterStyle[${index}]`, input)
+    })}
+    if (telegramStyles.length > 0) {
+
+    telegramStyles.forEach((input, index) => {
+      formData.append(`telegramStyle[${index}]`, input)
+    })
+  }
     const response = await fetch("/api/agent/launch", {
       method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      },
       body: formData
     })
 
     const data = await response.json();
     console.log(data);
+    if (response.ok) {
+      const decode = Buffer.from(data.transaction, 'base64')
+      const transaction = VersionedTransaction.deserialize(decode)
+      console.log(transaction)
+      const signedTransaction = await wallet.signTransaction(transaction);
+      console.log(signedTransaction);
+      try{
+      const signature = await connection.connection.sendRawTransaction(signedTransaction.serialize(), {
+        maxRetries: 5
+      })
+      const result = await connection.connection.confirmTransaction({
+        signature: signature,
+        blockhash: transaction.message.recentBlockhash,
+        lastValidBlockHeight: await connection.connection.getBlockHeight()
+      })
+      console.log(result.value);
+      console.log(signature);
+      toast.success(() => <div>
+        <p>Agent launched successfully</p>
+        <a href={'https://pump.fun/coin/' + data.mint} target="_blank">[token]</a>
+        <a href={'https://solscan.io/tx/' + signature} target="_blank">[tx]</a>
+      </div>)
+      } catch (error) {
+        console.log(error);
+        if (error instanceof SendTransactionError) {
+          console.log(await error.getLogs(connection.connection))
+        }
+      }
+      
+    }
+    console.log(data);
+    if (response.ok) {
+      toast.success("Agent launched successfully");
+    } else {
+      toast.error(data.error);
+    }
   }
 
   const updateSetting = <K extends keyof AgentSettings>(
@@ -469,6 +557,14 @@ function LaunchPage() {
                       <div className="space-y-4">
                         <Label>Telegram Configuration</Label>
                         <div className="space-y-2">
+                          <Input
+                            placeholder="Username"
+                            value={settings.telegramConfig.username}
+                            onChange={(e) => updateSetting('telegramConfig', {
+                              ...settings.telegramConfig,
+                              username: e.target.value
+                            })}
+                          />
                           <Input
                             placeholder="Bot Secret"
                             value={settings.telegramConfig.bot_secret}

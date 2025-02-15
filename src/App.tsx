@@ -3,6 +3,7 @@ import HomePage from '@/pages/HomePage'
 import LaunchPage from '@/pages/LaunchPage'
 import AgentView from '@/pages/AgentView'
 import { CubieWalletProvider } from './contexts/wallet'
+import { Toaster } from 'sonner'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/agent/:id" element={<AgentView />} />
       </Routes>
     </Router>
+    <Toaster richColors/>
     </CubieWalletProvider>
   )
 }
