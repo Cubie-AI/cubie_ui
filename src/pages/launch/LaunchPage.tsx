@@ -46,6 +46,19 @@ const DEFAULT_AGENT_STATE: AgentSettings = {
   image: undefined,
 };
 
+const getProvider = () => {
+  if ("phantom" in window) {
+    // @ts-ignore
+    const provider = window.phantom?.solana;
+
+    if (provider?.isPhantom) {
+      return provider;
+    }
+  }
+
+  window.open("https://phantom.app/", "_blank");
+};
+
 function LaunchPage() {
   const [wallet, token, connection] = useCubieWallet();
   const [agentState, dispatch] = useReducer(agentReducer, DEFAULT_AGENT_STATE);
@@ -78,14 +91,24 @@ function LaunchPage() {
 
     const decode = Buffer.from(data.transaction, "base64");
     const transaction = VersionedTransaction.deserialize(decode);
-    const signedTransaction = await wallet.signTransaction(transaction);
+
     try {
-      const signature = await connection.sendRawTransaction(
-        signedTransaction.serialize(),
-        {
-          maxRetries: 5,
-        }
-      );
+      const provider = getProvider();
+      let signature: string;
+      if (provider) {
+        console.log("Signing transaction using window provider");
+        const signAndSend = await provider.signAndSendTransaction(transaction);
+        signature = signAndSend.signature;
+      } else {
+        console.log("Signing transaction using wallet");
+        const signedTransaction = await wallet.signTransaction(transaction);
+        signature = await connection.sendRawTransaction(
+          signedTransaction.serialize(),
+          {
+            maxRetries: 5,
+          }
+        );
+      }
 
       toast.success(() => (
         <LaunchSuccess mint={data.mint} signature={signature} />

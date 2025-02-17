@@ -1,8 +1,9 @@
+import { CopyButton } from "@/components/CopyButton";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { sendRequest } from "@/lib/utils";
-import { ArrowLeft, Check, Copy, MessageCircle, Twitter } from "lucide-react";
+import { ArrowLeft, MessageCircle, Twitter } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -25,7 +26,6 @@ function AgentView() {
   const navigate = useNavigate();
   const [agent, setAgent] = useState<Agent | null>(null);
   const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const getAgent = async () => {
@@ -50,17 +50,6 @@ function AgentView() {
   if (!agent) {
     return null;
   }
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy text: ", err);
-    }
-  };
-
   return (
     <div className="container mx-auto p-4 max-w-7xl pt-8">
       {/* Back Button */}
@@ -86,31 +75,11 @@ function AgentView() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Mint</Label>
-                <Button
-                  variant="outline"
-                  className={`w-full flex items-center gap-2 font-mono ${
-                    copied ? "border-green-500 text-green-500" : ""
-                  }`}
-                  onClick={() => copyToClipboard(agent.mint)}
-                >
-                  <span className="truncate max-w-[200px]">{agent.mint}</span>
-                  {copied ? (
-                    <Check className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </Button>
+                <CopyButton text={agent.mint} />
               </div>
               <div className="space-y-2">
                 <Label>Owner</Label>
-                <Button
-                  variant="outline"
-                  className="w-full flex items-center gap-2 font-mono"
-                  onClick={() => copyToClipboard(agent.owner)}
-                >
-                  <span className="truncate max-w-[200px]">{agent.owner}</span>
-                  <Copy className="h-4 w-4" />
-                </Button>
+                <CopyButton text={agent.owner} />
               </div>
             </div>
           </div>
