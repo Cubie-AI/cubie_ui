@@ -6,29 +6,6 @@ import { ArrowLeft, Check, Copy, MessageCircle, Twitter } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-// Add this type near the top of the file
-type VolumeData = {
-  total: string;
-  buyVolume: number;
-  sellVolume: number;
-  buyPercent: number;
-  sellPercent: number;
-};
-
-// Add this helper function
-const formatVolumeData = (total: string): VolumeData => {
-  const numericTotal = parseInt(total.replace(/[$,]/g, ""));
-  const buyVolume = Math.round(numericTotal * 0.6); // Example: 60% buys
-  const sellVolume = numericTotal - buyVolume;
-  return {
-    total,
-    buyVolume,
-    sellVolume,
-    buyPercent: (buyVolume / numericTotal) * 100,
-    sellPercent: (sellVolume / numericTotal) * 100,
-  };
-};
-
 interface Agent {
   id: number;
   name: string;
@@ -82,41 +59,6 @@ function AgentView() {
     } catch (err) {
       console.error("Failed to copy text: ", err);
     }
-  };
-
-  const chartData = [
-    { timestamp: "00:00", price: 1.23 },
-    { timestamp: "01:00", price: 1.27 },
-    { timestamp: "02:00", price: 1.35 },
-    { timestamp: "03:00", price: 1.42 },
-    { timestamp: "04:00", price: 1.45 },
-    { timestamp: "05:00", price: 1.41 },
-    { timestamp: "06:00", price: 1.38 },
-    { timestamp: "07:00", price: 1.35 },
-    { timestamp: "08:00", price: 1.32 },
-    { timestamp: "09:00", price: 1.45 },
-    { timestamp: "10:00", price: 1.52 },
-    { timestamp: "11:00", price: 1.58 },
-    { timestamp: "12:00", price: 1.67 },
-    { timestamp: "13:00", price: 1.75 },
-    { timestamp: "14:00", price: 1.82 },
-    { timestamp: "15:00", price: 1.85 },
-    { timestamp: "16:00", price: 1.89 },
-    { timestamp: "17:00", price: 1.86 },
-    { timestamp: "18:00", price: 1.82 },
-    { timestamp: "19:00", price: 1.79 },
-    { timestamp: "20:00", price: 1.76 },
-    { timestamp: "21:00", price: 1.82 },
-    { timestamp: "22:00", price: 1.88 },
-    { timestamp: "23:00", price: 1.92 },
-    { timestamp: "24:00", price: 1.95 },
-  ];
-
-  const chartConfig = {
-    price: {
-      label: "Price",
-      color: "#00ff9d",
-    },
   };
 
   return (

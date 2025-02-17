@@ -15,7 +15,6 @@ type BaseArrayFieldAction = {
     | "style"
     | "twitterStyles"
     | "telegramStyles"
-    | "people"
     | "enabledPlatforms"
   >;
 };
