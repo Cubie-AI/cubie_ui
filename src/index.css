@@ -149,15 +149,12 @@
 @keyframes nuclear-glow {
   0% { 
     background-color: #004d2f;
-    transform: scale(1);
   }
   50% { 
     background-color: #00ff9d;
-    transform: scale(1.02);
   }
   100% {
     background-color: transparent;
-    transform: scale(1);
   }
 }
 

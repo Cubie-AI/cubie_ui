@@ -1,13 +1,8 @@
 import { sendRequest } from "@/lib/utils";
 import { WalletSignMessageError } from "@solana/wallet-adapter-base";
-import {
-  useConnection,
-  useWallet,
-  WalletContextState,
-} from "@solana/wallet-adapter-react";
-import { Connection } from "@solana/web3.js";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import bs58 from "bs58";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 interface NonceResponse {
@@ -18,11 +13,7 @@ interface SignResponse {
   token: string;
 }
 
-export function useCubieWallet(): [
-  WalletContextState,
-  string | null,
-  Connection
-] {
+export function useCubieWallet() {
   const wallet = useWallet();
   const { connection } = useConnection();
   const [token, setToken] = useState<string | null>(
@@ -109,5 +100,14 @@ export function useCubieWallet(): [
     }
   }, [wallet]);
 
-  return [wallet, token, connection];
+  const value = useMemo(
+    () => ({
+      wallet,
+      token,
+      connection,
+    }),
+    [wallet, token, connection]
+  );
+
+  return value;
 }

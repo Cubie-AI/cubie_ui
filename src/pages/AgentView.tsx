@@ -1,3 +1,4 @@
+import { CommentCard } from "@/components/comment/CommentCard";
 import { CopyButton } from "@/components/CopyButton";
 import { TokenChart } from "@/components/launch/TokenChart";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,13 @@ interface Agent {
   marketCapValue: number;
   price: number;
   ticker: string;
+  comments: {
+    id: number;
+    replyTo?: number;
+    content: string;
+    address: string;
+    createdAt: string;
+  }[];
 }
 
 function AgentView() {
@@ -163,6 +171,18 @@ function AgentView() {
           <div className="space-y-4">
             <div className="text-sm text-muted-foreground">Price History</div>
             <TokenChart data={agent.history} />
+          </div>
+        </Card>
+
+        {/* Comments Section */}
+        <Card className="p-6">
+          <div className="space-y-4">
+            <div className="text-sm text-muted-foreground">Comments</div>
+            <CommentCard
+              initialComments={agent.comments}
+              agentId={agent.id}
+              devAddress={agent.owner}
+            />
           </div>
         </Card>
       </div>

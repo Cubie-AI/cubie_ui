@@ -63,6 +63,10 @@ function HomePage() {
         setAgents(bumped);
       }
     });
+
+    return () => {
+      socket.off("agent_created");
+    };
   }, [agents]);
 
   useEffect(() => {
@@ -160,9 +164,9 @@ function HomePage() {
 
           {/* Agents Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-            {filteredAndSortedAgents.map((agent, index) => (
+            {filteredAndSortedAgents.map((agent) => (
               <AgentCard
-                key={index}
+                key={agent.id}
                 id={agent.id}
                 ticker={agent.ticker}
                 name={agent.name}

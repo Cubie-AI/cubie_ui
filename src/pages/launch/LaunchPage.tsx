@@ -60,7 +60,7 @@ const getProvider = () => {
 };
 
 function LaunchPage() {
-  const [wallet, token, connection] = useCubieWallet();
+  const { wallet, token, connection } = useCubieWallet();
   const [agentState, dispatch] = useReducer(agentReducer, DEFAULT_AGENT_STATE);
 
   const submitAgent = async () => {
