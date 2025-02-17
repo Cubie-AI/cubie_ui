@@ -9,13 +9,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useSocket } from "@/hooks/use-socket";
 import { sendRequest } from "@/lib/utils";
 import { ArrowUpDown, Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface Agent {
-  id: string;
+  id: number;
   name: string;
   ticker: string;
   mintAddress: string;
@@ -23,7 +24,7 @@ interface Agent {
   photo: string;
   telegram?: string;
   twitter?: string;
-  description: string;
+  bio: string;
   createdAt: string;
   volume: {
     "5m": string;
@@ -31,6 +32,7 @@ interface Agent {
     "6h": string;
     "24h": string;
   };
+  bumped: boolean;
 }
 
 type SortOption = "bump" | "marketCap" | "created";
@@ -38,16 +40,37 @@ type SortOption = "bump" | "marketCap" | "created";
 function HomePage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<SortOption>("marketCap");
+  const [sortBy, setSortBy] = useState<SortOption>("bump");
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
+  const socket = useSocket();
+
+  const resetBump = useCallback(
+    (id: number) => {
+      setAgents(agents.map((a) => (a.id === id ? { ...a, bumped: false } : a)));
+    },
+    [agents]
+  );
+
+  useEffect(() => {
+    socket.on("agent_created", (agent: any) => {
+      console.log("agent_created", agent);
+      if (agent) {
+        const others = agents.filter((a) => a.id !== agent.id);
+        agent.bumped = true;
+        const bumped = [agent, ...others];
+        console.log(bumped);
+        setAgents(bumped);
+      }
+    });
+  }, [agents]);
 
   useEffect(() => {
     const getAgents = async () => {
       setLoading(true);
       const { data, error } = await sendRequest<Agent[]>("/api/agent");
       if (data) {
-        setAgents(data);
+        setAgents(data.map((a) => ({ ...a, bumped: false })));
       }
       if (error) {
         console.error("Failed to load agents:", error);
@@ -57,13 +80,14 @@ function HomePage() {
     getAgents();
   }, []);
 
-  const filteredAndSortedAgents = agents
-    .filter(
-      (agent) =>
-        agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        agent.description.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) => {
+  let filteredAndSortedAgents = agents.filter(
+    (agent) =>
+      agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      agent.bio.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      agent.ticker.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  if (sortBy !== "bump") {
+    filteredAndSortedAgents.sort((a, b) => {
       switch (sortBy) {
         case "marketCap":
           return b.marketCapValue - a.marketCapValue;
@@ -75,6 +99,7 @@ function HomePage() {
           return 0;
       }
     });
+  }
 
   if (loading) {
     return <LoadingSpinner />;
@@ -145,7 +170,9 @@ function HomePage() {
                 twitter={agent.twitter}
                 marketCapValue={agent.marketCapValue}
                 photo={agent.photo}
-                description={agent.description}
+                description={agent.bio}
+                isBumped={agent.bumped}
+                resetBump={resetBump}
               />
             ))}
           </div>

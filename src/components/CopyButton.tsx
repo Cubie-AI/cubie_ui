@@ -17,7 +17,7 @@ export function CopyButton({ text }: { text: string }) {
   return (
     <Button
       variant="outline"
-      className={`w-full flex items-center gap-2 font-mono ${
+      className={`w-full flex items-center gap-2 font-mono truncate ${
         copied ? "border-green-500 text-green-500" : ""
       }`}
       onClick={() => copyToClipboard()}

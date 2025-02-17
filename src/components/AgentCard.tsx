@@ -1,11 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { MessageCircle, Twitter } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface AgentCardProps {
-  id: string;
+  id: number;
   name: string;
   telegram?: string;
   twitter?: string;
@@ -14,6 +14,7 @@ interface AgentCardProps {
   description: string;
   isBumped?: boolean;
   ticker: string;
+  resetBump: (id: number) => void;
 }
 
 export function AgentCard({
@@ -25,26 +26,22 @@ export function AgentCard({
   photo,
   description,
   isBumped,
+  resetBump,
   ticker,
 }: AgentCardProps) {
   const navigate = useNavigate();
-  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
-    if (isBumped) {
-      setIsAnimating(true);
-      const timer = setTimeout(() => {
-        setIsAnimating(false);
-      }, 1000); // Match this with the total animation duration
-      return () => clearTimeout(timer);
-    }
+    setTimeout(() => {
+      resetBump(id);
+    }, 500);
   }, [isBumped]);
 
   return (
     <Card
       className={cn(
         "agent-card cursor-pointer hover:border-primary/50 transition-colors",
-        isAnimating && "bump-animation",
+        isBumped && "bump-animation",
         "border transition-all"
       )}
       onClick={() => navigate(`/agent/${id}`)}
@@ -66,7 +63,7 @@ export function AgentCard({
           <div className="flex gap-2">
             {telegram && (
               <a
-                href={telegram}
+                href={`https://t.me/${telegram}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary"
@@ -77,7 +74,7 @@ export function AgentCard({
             )}
             {twitter && (
               <a
-                href={twitter}
+                href={`https://x.com/${twitter}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary"

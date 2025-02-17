@@ -1,9 +1,11 @@
 import { CopyButton } from "@/components/CopyButton";
+import { TokenChart } from "@/components/launch/TokenChart";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { sendRequest } from "@/lib/utils";
-import { ArrowLeft, MessageCircle, Twitter } from "lucide-react";
+import { ArrowLeft, MessageCircle, Pill, Twitter } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -12,12 +14,16 @@ interface Agent {
   name: string;
   mint: string;
   owner: string;
-  imageUrl: string;
+  photo: string;
   bio: string;
   twitter: string | null;
   telegram: string | null;
-  price: string;
+  history: {
+    price: number;
+    time: number;
+  }[];
   marketCapValue: number;
+  price: number;
   ticker: string;
 }
 
@@ -63,29 +69,21 @@ function AgentView() {
       </Button>
 
       <div className="space-y-8">
-        {/* Top Section - Two Columns */}
-        <div className="grid grid-cols-2 gap-8">
-          {/* Left Column - Image and Basic Info */}
-          <div className="space-y-4">
-            <img
-              src={agent.imageUrl}
-              alt={agent.name}
-              className="w-full h-[400px] object-cover rounded-lg"
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Mint</Label>
-                <CopyButton text={agent.mint} />
-              </div>
-              <div className="space-y-2">
-                <Label>Owner</Label>
-                <CopyButton text={agent.owner} />
-              </div>
+        {/* Top Section - Flex layout */}
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Image Container */}
+          <div className="flex-shrink-0 w-full md:w-[300px]">
+            <div className="aspect-square">
+              <img
+                src={agent.photo}
+                alt={agent.name}
+                className="w-full h-full object-cover rounded-lg"
+              />
             </div>
           </div>
 
-          {/* Right Column - Name, Ticker, and Links */}
-          <div className="space-y-8">
+          {/* Info Container */}
+          <div className="flex-1 space-y-8">
             <div className="space-y-4">
               <div className="flex items-baseline gap-2">
                 <h1 className="text-3xl font-bold">{agent.name}</h1>
@@ -125,6 +123,17 @@ function AgentView() {
                     </a>
                   </Button>
                 )}
+                <Button asChild variant="outline">
+                  <a
+                    href={`https://pump.fun/token/${agent.mint}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2"
+                  >
+                    <Pill className="h-4 w-4" />
+                    Pump.fun
+                  </a>
+                </Button>
               </div>
             </div>
 
@@ -134,8 +143,28 @@ function AgentView() {
                 {agent.bio}
               </p>
             </div>
+
+            {/* Mint and Owner section */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Mint</Label>
+                <CopyButton text={agent.mint} />
+              </div>
+              <div className="space-y-2">
+                <Label>Owner</Label>
+                <CopyButton text={agent.owner} />
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Price Chart */}
+        <Card className="p-6">
+          <div className="space-y-4">
+            <div className="text-sm text-muted-foreground">Price History</div>
+            <TokenChart data={agent.history} />
+          </div>
+        </Card>
       </div>
     </div>
   );
