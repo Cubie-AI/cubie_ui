@@ -3,12 +3,10 @@ import { useEffect, useRef } from "react";
 import { CommentProps } from "./types";
 
 export function Comment({
-  id,
   replyTo,
   content,
   address,
   onReply,
-  isReplying,
   isHighlighted,
   onHighlight,
   isDev,

@@ -84,7 +84,6 @@ export function CommentCard({
               setReplyingTo(comment.id);
               setIsModalOpen(true);
             }}
-            isReplying={replyingTo === comment.id}
             isHighlighted={highlightedId === comment.id}
             onHighlight={handleHighlight}
             isDev={comment.address.toLowerCase() === devAddress.toLowerCase()}

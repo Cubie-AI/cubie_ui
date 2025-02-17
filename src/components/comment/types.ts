@@ -7,7 +7,6 @@ export interface CommentData {
 
 export interface CommentProps extends CommentData {
   onReply: () => void;
-  isReplying: boolean;
   isHighlighted?: boolean;
   onHighlight: (id: number) => void;
   isDev?: boolean;
