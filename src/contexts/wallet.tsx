@@ -30,7 +30,7 @@ export function CubieWalletProvider({
       <WalletProvider wallets={supportedWallets} autoConnect={true}>
         <WalletModalProvider>
           <div className="absolute top-4 right-4 md:top-8 md:right-8">
-            <Button variant="outline">
+            <Button variant="outline" asChild>
               <WalletMultiButton />
             </Button>
           </div>
