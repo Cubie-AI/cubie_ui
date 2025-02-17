@@ -46,7 +46,7 @@ const DEFAULT_AGENT_STATE: AgentSettings = {
   image: undefined,
 };
 
-const getProvider = () => {
+export const getProvider = () => {
   if ("phantom" in window) {
     // @ts-ignore
     const provider = window.phantom?.solana;

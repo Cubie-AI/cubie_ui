@@ -15,3 +15,17 @@ export function LaunchSuccess({ mint, signature }: LaunchSuccessProps) {
     </div>
   );
 }
+
+export function SwapSuccess({
+  signature,
+}: Pick<LaunchSuccessProps, "signature">) {
+  return (
+    <div>
+      <p>Successfully swapped</p>
+
+      <a href={"https://solscan.io/tx/" + signature} target="_blank">
+        [tx]
+      </a>
+    </div>
+  );
+}

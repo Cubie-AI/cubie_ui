@@ -1,6 +1,7 @@
 import { CommentCard } from "@/components/comment/CommentCard";
 import { CopyButton } from "@/components/CopyButton";
 import { TokenChart } from "@/components/launch/TokenChart";
+import { Swap } from "@/components/swap/Swap";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -167,12 +168,20 @@ function AgentView() {
         </div>
 
         {/* Price Chart */}
-        <Card className="p-6">
-          <div className="space-y-4">
-            <div className="text-sm text-muted-foreground">Price History</div>
-            <TokenChart data={agent.history} />
+        <div className="grid grid-cols-3 gap-8">
+          {/* Price Chart */}
+          <Card className="p-6 col-span-2">
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">Price History</div>
+              <TokenChart data={agent.history} />
+            </div>
+          </Card>
+
+          {/* Swap Component */}
+          <div>
+            <Swap mint={agent.mint} />
           </div>
-        </Card>
+        </div>
 
         {/* Comments Section */}
         <Card className="p-6">
