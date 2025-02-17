@@ -134,7 +134,7 @@ function AgentView() {
                 )}
                 <Button asChild variant="outline">
                   <a
-                    href={`https://pump.fun/token/${agent.mint}`}
+                    href={`https://pump.fun/coin/${agent.mint}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2"
