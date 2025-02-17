@@ -1,12 +1,10 @@
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Copy, MessageCircle, Twitter, ArrowLeft } from "lucide-react"
-import { useState } from "react"
-import { useParams, useNavigate } from "react-router-dom"
-import { agents } from "@/store/agents"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Area, AreaChart, XAxis, YAxis } from "recharts"
-import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { sendRequest } from "@/lib/utils";
+import { ArrowLeft, Check, Copy, MessageCircle, Twitter } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 // Add this type near the top of the file
 type VolumeData = {
@@ -15,43 +13,76 @@ type VolumeData = {
   sellVolume: number;
   buyPercent: number;
   sellPercent: number;
-}
+};
 
 // Add this helper function
 const formatVolumeData = (total: string): VolumeData => {
-  const numericTotal = parseInt(total.replace(/[$,]/g, ''))
-  const buyVolume = Math.round(numericTotal * 0.6) // Example: 60% buys
-  const sellVolume = numericTotal - buyVolume
+  const numericTotal = parseInt(total.replace(/[$,]/g, ""));
+  const buyVolume = Math.round(numericTotal * 0.6); // Example: 60% buys
+  const sellVolume = numericTotal - buyVolume;
   return {
     total,
     buyVolume,
     sellVolume,
     buyPercent: (buyVolume / numericTotal) * 100,
     sellPercent: (sellVolume / numericTotal) * 100,
-  }
+  };
+};
+
+interface Agent {
+  id: number;
+  name: string;
+  mint: string;
+  owner: string;
+  imageUrl: string;
+  bio: string;
+  twitter: string | null;
+  telegram: string | null;
+  price: string;
+  marketCapValue: number;
+  ticker: string;
 }
 
 function AgentView() {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const [volumeTimeframe, setVolumeTimeframe] = useState("24h")
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [agent, setAgent] = useState<Agent | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
-  const agent = agents.find(a => a.id === id)
+  useEffect(() => {
+    const getAgent = async () => {
+      setLoading(true);
+      const { data, error } = await sendRequest<Agent>(`/api/agent/${id}`);
+      if (data) {
+        setAgent(data);
+      }
+      if (error) {
+        console.error("Failed to load agent:", error);
+        navigate("/");
+      }
+      setLoading(false);
+    };
+    getAgent();
+  }, [id, navigate]);
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   if (!agent) {
-    // You might want to add a proper 404 page
-    navigate('/')
-    return null
+    return null;
   }
 
   const copyToClipboard = async (text: string) => {
     try {
-      await navigator.clipboard.writeText(text)
-      // You might want to add a toast notification here
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy text: ', err)
+      console.error("Failed to copy text: ", err);
     }
-  }
+  };
 
   const chartData = [
     { timestamp: "00:00", price: 1.23 },
@@ -79,14 +110,14 @@ function AgentView() {
     { timestamp: "22:00", price: 1.88 },
     { timestamp: "23:00", price: 1.92 },
     { timestamp: "24:00", price: 1.95 },
-  ]
+  ];
 
   const chartConfig = {
     price: {
       label: "Price",
       color: "#00ff9d",
     },
-  }
+  };
 
   return (
     <div className="container mx-auto p-4 max-w-7xl pt-8">
@@ -94,7 +125,7 @@ function AgentView() {
       <Button
         variant="ghost"
         className="mb-8 -ml-4 text-muted-foreground hover:text-foreground"
-        onClick={() => navigate('/')}
+        onClick={() => navigate("/")}
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back
@@ -105,173 +136,98 @@ function AgentView() {
         <div className="grid grid-cols-2 gap-8">
           {/* Left Column - Image and Basic Info */}
           <div className="space-y-4">
-            <div className="flex gap-6">
-              {/* Agent Image */}
-              <div className="w-32 h-32 rounded-lg overflow-hidden">
-                <img 
-                  src={agent.photo} 
-                  alt={agent.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              {/* Basic Info */}
+            <img
+              src={agent.imageUrl}
+              alt={agent.name}
+              className="w-full h-[400px] object-cover rounded-lg"
+            />
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <div>
-                  <h1 className="text-3xl font-bold">{agent.name}</h1>
-                  <div className="text-lg text-muted-foreground font-mono">{agent.ticker}</div>
-                </div>
-
-                {/* Mint Address */}
+                <Label>Mint</Label>
                 <Button
                   variant="outline"
-                  className="flex items-center gap-2 font-mono text-sm"
-                  onClick={() => copyToClipboard(agent.mintAddress)}
+                  className={`w-full flex items-center gap-2 font-mono ${
+                    copied ? "border-green-500 text-green-500" : ""
+                  }`}
+                  onClick={() => copyToClipboard(agent.mint)}
                 >
-                  <span className="truncate max-w-[200px]">{agent.mintAddress}</span>
+                  <span className="truncate max-w-[200px]">{agent.mint}</span>
+                  {copied ? (
+                    <Check className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+              <div className="space-y-2">
+                <Label>Owner</Label>
+                <Button
+                  variant="outline"
+                  className="w-full flex items-center gap-2 font-mono"
+                  onClick={() => copyToClipboard(agent.owner)}
+                >
+                  <span className="truncate max-w-[200px]">{agent.owner}</span>
                   <Copy className="h-4 w-4" />
                 </Button>
               </div>
             </div>
           </div>
 
-          {/* Right Column - Description */}
-          <div className="space-y-4">
+          {/* Right Column - Name, Ticker, and Links */}
+          <div className="space-y-8">
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold">About</h2>
-              <p className="text-muted-foreground">
-                {agent.description}
-              </p>
+              <div className="flex items-baseline gap-2">
+                <h1 className="text-3xl font-bold">{agent.name}</h1>
+                <span className="text-lg text-muted-foreground">
+                  $
+                  {agent.ticker.startsWith("$")
+                    ? agent.ticker.slice(1)
+                    : agent.ticker}
+                </span>
+              </div>
+              <div className="text-lg text-muted-foreground">
+                ${agent.marketCapValue.toLocaleString()}
+              </div>
+              <div className="flex gap-2">
+                {agent.twitter && (
+                  <Button asChild variant="outline">
+                    <a
+                      href={`https://x.com/${agent.twitter}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2"
+                    >
+                      <Twitter className="h-4 w-4" />@{agent.twitter}
+                    </a>
+                  </Button>
+                )}
+                {agent.telegram && (
+                  <Button asChild variant="outline">
+                    <a
+                      href={`https://t.me/${agent.telegram}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                      {agent.telegram}
+                    </a>
+                  </Button>
+                )}
+              </div>
             </div>
 
-            {/* Social Links */}
-            <div className="flex gap-2">
-              {agent.telegram && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                  asChild
-                >
-                  <a 
-                    href={agent.telegram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    Telegram
-                  </a>
-                </Button>
-              )}
-              {agent.twitter && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                  asChild
-                >
-                  <a 
-                    href={agent.twitter}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Twitter className="h-4 w-4" />
-                    Twitter
-                  </a>
-                </Button>
-              )}
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">About</h2>
+              <p className="text-muted-foreground whitespace-pre-line">
+                {agent.bio}
+              </p>
             </div>
           </div>
         </div>
-
-        {/* Chart Section - Full Width */}
-        <Card className="p-4 -mx-4 sm:-mx-6 md:-mx-8">
-          {/* Stats Row */}
-          <div className="flex items-center gap-8 mb-6 px-4 sm:px-6 md:px-8">
-            {/* Market Cap */}
-            <div>
-              <div className="text-xs text-muted-foreground">Market Cap</div>
-              <div className="text-sm font-bold">${agent.marketCapValue.toLocaleString()}</div>
-            </div>
-
-            {/* Volume Pills */}
-            <div className="flex items-center gap-4">
-              <div className="text-xs text-muted-foreground">Volume</div>
-              <div className="flex gap-2">
-                {Object.entries(agent.volume).map(([timeframe, total]) => {
-                  const volumeData = formatVolumeData(total)
-                  return (
-                    <div 
-                      key={timeframe}
-                      className={cn(
-                        "px-2 py-1 rounded-full text-xs border",
-                        volumeTimeframe === timeframe ? "border-primary" : "border-muted"
-                      )}
-                      onClick={() => setVolumeTimeframe(timeframe)}
-                      role="button"
-                      tabIndex={0}
-                    >
-                      <span className="font-medium">{timeframe}</span>
-                      <span className="ml-2 text-muted-foreground">{volumeData.total}</span>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* Chart - Full Width */}
-          <div className="w-full">
-            <ChartContainer config={chartConfig} className="h-[400px] w-full">
-              <AreaChart data={chartData} width={window.innerWidth - 32} height={400}>
-                <defs>
-                  <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#00ff9d" stopOpacity={0.5} />
-                    <stop offset="100%" stopColor="#00ff9d" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis 
-                  dataKey="timestamp" 
-                  stroke="#888888"
-                  fontSize={10}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke="#888888"
-                  fontSize={10}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => `$${value}`}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="price"
-                  stroke="#00ff9d"
-                  fill="url(#gradient)"
-                  strokeWidth={2}
-                />
-                <ChartTooltip
-                  content={({ active, payload }) => {
-                    if (active && payload) {
-                      return (
-                        <ChartTooltipContent
-                          active={active}
-                          payload={payload}
-                          formatter={(value) => `$${value}`}
-                        />
-                      )
-                    }
-                    return null
-                  }}
-                />
-              </AreaChart>
-            </ChartContainer>
-          </div>
-        </Card>
       </div>
     </div>
-  )
+  );
 }
 
-export default AgentView 
+export default AgentView;

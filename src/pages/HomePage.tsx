@@ -1,41 +1,84 @@
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Search, ArrowUpDown } from "lucide-react"
-import { useNavigate } from 'react-router-dom'
+import { AgentCard } from "@/components/AgentCard";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import {  useState } from "react"
-import { AgentCard } from "@/components/AgentCard"
-import { agents } from "@/store/agents"
+} from "@/components/ui/select";
+import { sendRequest } from "@/lib/utils";
+import { ArrowUpDown, Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-type SortOption = 'bump' | 'marketCap' | 'created'
+interface Agent {
+  id: string;
+  name: string;
+  ticker: string;
+  mintAddress: string;
+  marketCapValue: number;
+  photo: string;
+  telegram?: string;
+  twitter?: string;
+  description: string;
+  createdAt: string;
+  volume: {
+    "5m": string;
+    "1h": string;
+    "6h": string;
+    "24h": string;
+  };
+}
+
+type SortOption = "bump" | "marketCap" | "created";
 
 function HomePage() {
-  const navigate = useNavigate()
-  const [searchQuery, setSearchQuery] = useState('')
-  const [sortBy, setSortBy] = useState<SortOption>('marketCap')
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<SortOption>("marketCap");
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  
+  useEffect(() => {
+    const getAgents = async () => {
+      setLoading(true);
+      const { data, error } = await sendRequest<Agent[]>("/api/agent");
+      if (data) {
+        setAgents(data);
+      }
+      if (error) {
+        console.error("Failed to load agents:", error);
+      }
+      setLoading(false);
+    };
+    getAgents();
+  }, []);
+
   const filteredAndSortedAgents = agents
-    .filter(agent => 
-      agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      agent.description.toLowerCase().includes(searchQuery.toLowerCase())
+    .filter(
+      (agent) =>
+        agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        agent.description.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .sort((a, b) => {
       switch (sortBy) {
-        case 'marketCap':
-          return b.marketCapValue - a.marketCapValue
-        case 'created':
-          return b.createdAt.getTime() - a.createdAt.getTime()
+        case "marketCap":
+          return b.marketCapValue - a.marketCapValue;
+        case "created":
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
         default:
-          return 0
+          return 0;
       }
-    })
+    });
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -47,10 +90,10 @@ function HomePage() {
             ca: 2MH8ga3TuLvuvX2GUtVRS2BS8B9ujZo3bj5QeAkMpump
           </p>
         </div>
-        <Button 
-          className="text-sm" 
+        <Button
+          className="text-sm"
           variant="outline"
-          onClick={() => navigate('/launch')}
+          onClick={() => navigate("/launch")}
         >
           Launch an agent
         </Button>
@@ -93,9 +136,10 @@ function HomePage() {
           {/* Agents Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             {filteredAndSortedAgents.map((agent, index) => (
-              <AgentCard 
+              <AgentCard
                 key={index}
                 id={agent.id}
+                ticker={agent.ticker}
                 name={agent.name}
                 telegram={agent.telegram}
                 twitter={agent.twitter}
@@ -108,7 +152,7 @@ function HomePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default HomePage 
+export default HomePage;
