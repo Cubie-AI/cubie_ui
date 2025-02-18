@@ -1,11 +1,15 @@
 interface LaunchSuccessProps {
+  id: number;
   mint: string;
   signature: string;
 }
-export function LaunchSuccess({ mint, signature }: LaunchSuccessProps) {
+export function LaunchSuccess({ id, mint, signature }: LaunchSuccessProps) {
   return (
     <div>
       <p>Agent launched successfully</p>
+      <a href={`/agent/${id}`} target="_blank">
+        [agent]
+      </a>
       <a href={"https://pump.fun/coin/" + mint} target="_blank">
         [token]
       </a>

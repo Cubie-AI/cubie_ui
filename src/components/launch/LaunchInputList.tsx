@@ -9,6 +9,7 @@ interface LaunchInputListProps {
   values: string[];
   dispatch: React.Dispatch<any>;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 export function LaunchInputList({
@@ -17,6 +18,7 @@ export function LaunchInputList({
   values,
   dispatch,
   placeholder,
+  disabled,
 }: LaunchInputListProps) {
   return (
     <div className="space-y-2">
@@ -37,6 +39,7 @@ export function LaunchInputList({
                 })
               }
               placeholder={placeholder}
+              disabled={disabled}
             />
             <Button
               variant="outline"
@@ -50,6 +53,7 @@ export function LaunchInputList({
                   },
                 })
               }
+              disabled={disabled}
             >
               <X className="h-4 w-4" />
             </Button>
@@ -57,7 +61,6 @@ export function LaunchInputList({
         ))}
         <Button
           variant="outline"
-          size="sm"
           className="flex items-center gap-2"
           onClick={() =>
             dispatch({
@@ -68,6 +71,7 @@ export function LaunchInputList({
               },
             })
           }
+          disabled={disabled}
         >
           <Plus className="h-4 w-4" />
           Add {label}

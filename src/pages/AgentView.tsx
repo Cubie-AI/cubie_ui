@@ -10,6 +10,7 @@ import { sendRequest } from "@/lib/utils";
 import { ArrowLeft, MessageCircle, Pill, Twitter } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 interface Agent {
   id: number;
@@ -50,6 +51,7 @@ function AgentView() {
         setAgent(data);
       }
       if (error) {
+        toast.error(error || "Failed to load agent");
         console.error("Failed to load agent:", error);
         navigate("/");
       }
@@ -106,9 +108,13 @@ function AgentView() {
               <div className="text-lg text-muted-foreground">
                 ${agent.marketCapValue.toLocaleString()}
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 {agent.twitter && (
-                  <Button asChild variant="outline">
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                  >
                     <a
                       href={`https://x.com/${agent.twitter}`}
                       target="_blank"
@@ -120,7 +126,11 @@ function AgentView() {
                   </Button>
                 )}
                 {agent.telegram && (
-                  <Button asChild variant="outline">
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                  >
                     <a
                       href={`https://t.me/${agent.telegram}`}
                       target="_blank"
@@ -132,7 +142,7 @@ function AgentView() {
                     </a>
                   </Button>
                 )}
-                <Button asChild variant="outline">
+                <Button asChild variant="outline" className="w-full sm:w-auto">
                   <a
                     href={`https://pump.fun/coin/${agent.mint}`}
                     target="_blank"
@@ -140,7 +150,7 @@ function AgentView() {
                     className="flex items-center gap-2"
                   >
                     <Pill className="h-4 w-4" />
-                    Pump.fun
+                    pump.fun
                   </a>
                 </Button>
               </div>
@@ -168,19 +178,19 @@ function AgentView() {
         </div>
 
         {/* Price Chart */}
-        <div className="grid grid-cols-3 gap-8">
-          {/* Price Chart */}
-          <Card className="p-6 col-span-2">
+        <div className="space-y-8 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-8">
+          {/* Swap Component - Shows above chart on mobile */}
+          <div className="lg:order-last">
+            <Swap mint={agent.mint} ticker={agent.ticker} />
+          </div>
+
+          {/* Price Chart - Full width on mobile */}
+          <Card className="p-6 lg:col-span-2">
             <div className="space-y-4">
               <div className="text-sm text-muted-foreground">Price History</div>
               <TokenChart data={agent.history} />
             </div>
           </Card>
-
-          {/* Swap Component */}
-          <div>
-            <Swap mint={agent.mint} />
-          </div>
         </div>
 
         {/* Comments Section */}

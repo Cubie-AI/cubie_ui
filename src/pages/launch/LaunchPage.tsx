@@ -8,17 +8,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { UploadDropzone } from "@/components/ui/upload-dropzone";
 import { useCubieWallet } from "@/hooks/wallet-hook";
 import { cn, sendRequest } from "@/lib/utils";
 import { SendTransactionError, VersionedTransaction } from "@solana/web3.js";
 import { Buffer } from "buffer";
 import { ArrowLeft, Rocket } from "lucide-react";
-import { useReducer } from "react";
+import { useCallback, useMemo, useReducer } from "react";
 import { toast } from "sonner";
 import { agentReducer } from "./reducer";
 import { AgentSettings, LaunchResponse } from "./types";
@@ -111,7 +111,7 @@ function LaunchPage() {
       }
 
       toast.success(() => (
-        <LaunchSuccess mint={data.mint} signature={signature} />
+        <LaunchSuccess id={data.id} mint={data.mint} signature={signature} />
       ));
     } catch (error) {
       console.log(error);
@@ -122,12 +122,19 @@ function LaunchPage() {
     }
   };
 
-  const handleImageSelect = (file: File) => {
+  const handleImageSelect = useCallback((file: File) => {
     dispatch({ type: "set_image", payload: file });
-  };
+  }, []);
+
+  const currentImage = useMemo(() => {
+    if (!agentState.image) {
+      return undefined;
+    }
+    return URL.createObjectURL(agentState.image);
+  }, [agentState.image]);
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
+    <div className="min-h-screen bg-background p-4 md:p-8 pt-8">
       <div className="max-w-4xl mx-auto space-y-8">
         <Button
           variant="ghost"
@@ -151,19 +158,15 @@ function LaunchPage() {
             </CardHeader>
             <CardContent className="space-y-8">
               {/* Image and Basic Info Section */}
-              <div className="flex flex-col md:flex-row gap-8 h-[300px]">
+              <div className="flex flex-col md:flex-row gap-8">
                 {/* Left Column - Image Upload */}
-                <div className="w-full md:w-64">
+                <div className="w-full md:w-64 h-[300px]">
                   <div className="h-full flex flex-col">
                     <Label className="mb-3">Agent Image</Label>
                     <div className="flex-1 border-2 border-dashed rounded-lg p-4 hover:border-primary/50 transition-colors">
                       <UploadDropzone
                         onFileSelect={handleImageSelect}
-                        currentImage={
-                          agentState.image
-                            ? URL.createObjectURL(agentState.image)
-                            : undefined
-                        }
+                        currentImage={currentImage}
                       />
                     </div>
                   </div>
@@ -171,51 +174,48 @@ function LaunchPage() {
 
                 {/* Right Column - Basic Info */}
                 <div className="flex-1">
-                  <div className="h-full flex flex-col">
-                    <div className="space-y-3 mb-4">
-                      <div className="flex gap-4">
-                        <div className="flex-1">
-                          <Label htmlFor="name">Name</Label>
-                          <Input
-                            id="name"
-                            value={agentState.name}
-                            onChange={(e) =>
-                              dispatch({
-                                type: "set_field",
-                                payload: {
-                                  name: "name",
-                                  value: e.target.value,
-                                },
-                              })
-                            }
-                            placeholder="CubieCubed"
-                          />
-                        </div>
-                        <div className="w-32">
-                          <Label htmlFor="ticker">Ticker</Label>
-                          <Input
-                            id="ticker"
-                            value={agentState.ticker}
-                            onChange={(e) =>
-                              dispatch({
-                                type: "set_field",
-                                payload: {
-                                  name: "ticker",
-                                  value: e.target.value,
-                                },
-                              })
-                            }
-                            placeholder="CUBIE"
-                            className="font-mono uppercase"
-                          />
-                        </div>
+                  <div className="space-y-4">
+                    {/* Name and Ticker inputs */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Name</Label>
+                        <Input
+                          placeholder="Cubiecubed"
+                          value={agentState.name}
+                          onChange={(e) =>
+                            dispatch({
+                              type: "set_field",
+                              payload: {
+                                name: "name",
+                                value: e.target.value,
+                              },
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Ticker</Label>
+                        <Input
+                          placeholder="CUBIE"
+                          value={agentState.ticker}
+                          onChange={(e) =>
+                            dispatch({
+                              type: "set_field",
+                              payload: {
+                                name: "ticker",
+                                value: e.target.value,
+                              },
+                            })
+                          }
+                        />
                       </div>
                     </div>
 
-                    <div className="flex-1 flex flex-col space-y-3">
-                      <Label htmlFor="bio">Bio</Label>
+                    {/* Bio with increased height on mobile */}
+                    <div className="space-y-2">
+                      <Label>Bio</Label>
                       <Textarea
-                        id="bio"
+                        placeholder="Tell us about your agent..."
                         value={agentState.bio}
                         onChange={(e) =>
                           dispatch({
@@ -226,8 +226,7 @@ function LaunchPage() {
                             },
                           })
                         }
-                        placeholder="First social agent built using $MAIAR"
-                        className="flex-1"
+                        className="min-h-[120px]"
                       />
                     </div>
                   </div>
@@ -242,7 +241,7 @@ function LaunchPage() {
                 name="knowledge"
                 values={agentState.knowledge}
                 dispatch={dispatch}
-                placeholder="Enter knowledge or information the agent should know..."
+                placeholder="Very good at deploying agents on-chain..."
               />
 
               <div className="border-t pt-8" />
@@ -253,150 +252,175 @@ function LaunchPage() {
                 name="style"
                 values={agentState.style}
                 dispatch={dispatch}
-                placeholder="Enter style rules that apply to all platforms..."
+                placeholder="Do not use emojis..."
               />
 
               <div className="border-t pt-8" />
 
-              {/* Platform Selection */}
-              <ToggleGroup
-                type="multiple"
-                variant="outline"
-                value={agentState.enabledPlatforms}
-                onValueChange={(value) =>
-                  dispatch({
-                    type: "set_field",
-                    payload: {
-                      name: "enabledPlatforms",
-                      value: value,
-                    },
-                  })
-                }
-                className="grid grid-cols-2 w-full"
-              >
-                <ToggleGroupItem value="twitter" className="">
-                  Twitter
-                </ToggleGroupItem>
-                <ToggleGroupItem value="telegram" className="">
-                  Telegram
-                </ToggleGroupItem>
-              </ToggleGroup>
+              {/* Platform Selection and Configs */}
+              <div className="space-y-8">
+                {/* Twitter Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="twitter"
+                      checked={agentState.enabledPlatforms.includes("twitter")}
+                      onCheckedChange={(checked: boolean) => {
+                        dispatch({
+                          type: "set_field",
+                          payload: {
+                            name: "enabledPlatforms",
+                            value: checked
+                              ? [...agentState.enabledPlatforms, "twitter"]
+                              : agentState.enabledPlatforms.filter(
+                                  (p) => p !== "twitter"
+                                ),
+                          },
+                        });
+                      }}
+                    />
+                    <Label htmlFor="twitter">Twitter</Label>
+                  </div>
 
-              {/* Platform Specific Sections */}
-              <div className="grid grid-cols-2 gap-8">
-                {/* Twitter Column */}
-                <div>
-                  {agentState.enabledPlatforms.includes("twitter") && (
-                    <div className="space-y-4">
-                      <Label>Twitter Configuration</Label>
-                      <div className="space-y-2">
-                        <Input
-                          placeholder="Username"
-                          value={agentState.twitterConfig.username}
-                          onChange={(e) =>
-                            dispatch({
-                              type: "set_twitter_config",
-                              payload: {
-                                name: "username",
-                                value: e.target.value,
-                              },
-                            })
-                          }
-                        />
-                        <Input
-                          placeholder="Email"
-                          type="email"
-                          value={agentState.twitterConfig.email}
-                          onChange={(e) =>
-                            dispatch({
-                              type: "set_twitter_config",
-                              payload: {
-                                name: "email",
-                                value: e.target.value,
-                              },
-                            })
-                          }
-                        />
-                        <Input
-                          placeholder="Password"
-                          type="password"
-                          value={agentState.twitterConfig.password}
-                          onChange={(e) => {
-                            dispatch({
-                              type: "set_twitter_config",
-                              payload: {
-                                name: "password",
-                                value: e.target.value,
-                              },
-                            });
-                          }}
-                        />
-                      </div>
+                  {/* Twitter Config */}
+                  <div className="pl-6 space-y-4">
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Username"
+                        value={agentState.twitterConfig.username}
+                        onChange={(e) =>
+                          dispatch({
+                            type: "set_twitter_config",
+                            payload: {
+                              name: "username",
+                              value: e.target.value,
+                            },
+                          })
+                        }
+                        disabled={
+                          !agentState.enabledPlatforms.includes("twitter")
+                        }
+                      />
+                      <Input
+                        placeholder="Email"
+                        type="email"
+                        value={agentState.twitterConfig.email}
+                        onChange={(e) =>
+                          dispatch({
+                            type: "set_twitter_config",
+                            payload: {
+                              name: "email",
+                              value: e.target.value,
+                            },
+                          })
+                        }
+                        disabled={
+                          !agentState.enabledPlatforms.includes("twitter")
+                        }
+                      />
+                      <Input
+                        placeholder="Password"
+                        type="password"
+                        value={agentState.twitterConfig.password}
+                        onChange={(e) => {
+                          dispatch({
+                            type: "set_twitter_config",
+                            payload: {
+                              name: "password",
+                              value: e.target.value,
+                            },
+                          });
+                        }}
+                        disabled={
+                          !agentState.enabledPlatforms.includes("twitter")
+                        }
+                      />
                     </div>
-                  )}
-                </div>
 
-                {/* Telegram Column */}
-                <div>
-                  {agentState.enabledPlatforms.includes("telegram") && (
-                    <div className="space-y-4">
-                      <Label>Telegram Configuration</Label>
-                      <div className="space-y-2">
-                        <Input
-                          placeholder="Username"
-                          value={agentState.telegramConfig.username}
-                          onChange={(e) =>
-                            dispatch({
-                              type: "set_telegram_config",
-                              payload: {
-                                name: "username",
-                                value: e.target.value,
-                              },
-                            })
-                          }
-                        />
-                        <Input
-                          placeholder="Bot Secret"
-                          value={agentState.telegramConfig.bot_secret}
-                          onChange={(e) =>
-                            dispatch({
-                              type: "set_telegram_config",
-                              payload: {
-                                name: "bot_secret",
-                                value: e.target.value,
-                              },
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Twitter Styles */}
-                <div>
-                  {agentState.enabledPlatforms.includes("twitter") && (
                     <LaunchInputList
                       label="Twitter Style Rules"
                       name="twitterStyles"
                       values={agentState.twitterStyles}
                       dispatch={dispatch}
-                      placeholder="Enter Twitter-specific style rules..."
+                      placeholder="Do not use hashtags..."
+                      disabled={
+                        !agentState.enabledPlatforms.includes("twitter")
+                      }
                     />
-                  )}
+                  </div>
                 </div>
 
-                {/* Telegram Styles */}
-                <div>
-                  {agentState.enabledPlatforms.includes("telegram") && (
+                {/* Telegram Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="telegram"
+                      checked={agentState.enabledPlatforms.includes("telegram")}
+                      onCheckedChange={(checked) => {
+                        dispatch({
+                          type: "set_field",
+                          payload: {
+                            name: "enabledPlatforms",
+                            value: checked
+                              ? [...agentState.enabledPlatforms, "telegram"]
+                              : agentState.enabledPlatforms.filter(
+                                  (p) => p !== "telegram"
+                                ),
+                          },
+                        });
+                      }}
+                    />
+                    <Label htmlFor="telegram">Telegram</Label>
+                  </div>
+
+                  {/* Telegram Config */}
+                  <div className="pl-6 space-y-4">
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Username"
+                        value={agentState.telegramConfig.username}
+                        onChange={(e) =>
+                          dispatch({
+                            type: "set_telegram_config",
+                            payload: {
+                              name: "username",
+                              value: e.target.value,
+                            },
+                          })
+                        }
+                        disabled={
+                          !agentState.enabledPlatforms.includes("telegram")
+                        }
+                      />
+                      <Input
+                        placeholder="Bot Secret"
+                        value={agentState.telegramConfig.bot_secret}
+                        onChange={(e) =>
+                          dispatch({
+                            type: "set_telegram_config",
+                            payload: {
+                              name: "bot_secret",
+                              value: e.target.value,
+                            },
+                          })
+                        }
+                        disabled={
+                          !agentState.enabledPlatforms.includes("telegram")
+                        }
+                      />
+                    </div>
+
                     <LaunchInputList
                       label="Telegram Style Rules"
                       name="telegramStyles"
                       values={agentState.telegramStyles}
                       dispatch={dispatch}
-                      placeholder="Enter Telegram-specific style rules..."
+                      placeholder="Respond with indepth analysis..."
+                      disabled={
+                        !agentState.enabledPlatforms.includes("telegram")
+                      }
                     />
-                  )}
+                  </div>
                 </div>
               </div>
 

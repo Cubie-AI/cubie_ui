@@ -30,6 +30,7 @@ export interface AgentSettings {
 }
 
 export interface LaunchResponse {
+  id: number;
   mint: string;
   transaction: string;
 }

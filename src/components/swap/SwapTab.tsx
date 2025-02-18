@@ -11,7 +11,7 @@ import { SwapSuccess } from "../toasts/LaunchSuccess";
 import { Quote, SwapTabProps } from "./types";
 import { fetchQuote } from "./util";
 
-export function SwapTab({ mint, type, decimals }: SwapTabProps) {
+export function SwapTab({ mint, type, decimals, placeholder }: SwapTabProps) {
   const { connection, token, wallet } = useCubieWallet();
   const [quote, setQuote] = useState<Quote | null>(null);
   const [outputAmount, setOutputAmount] = useState(0);
@@ -105,7 +105,7 @@ export function SwapTab({ mint, type, decimals }: SwapTabProps) {
     <div className="space-y-2">
       <Input
         type="number"
-        placeholder="0.5"
+        placeholder={placeholder}
         value={amount}
         onChange={(e) => handleInputChange(e.target.value)}
       />

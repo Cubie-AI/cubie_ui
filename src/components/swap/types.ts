@@ -1,5 +1,6 @@
 export interface SwapProps {
   mint: string;
+  ticker: string;
 }
 
 export interface Quote {
@@ -33,4 +34,5 @@ export interface SwapTabProps {
   mint: string;
   type: "buy" | "sell";
   decimals: number;
+  placeholder?: string;
 }
