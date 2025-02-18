@@ -88,7 +88,7 @@ export function AgentCard({
         <div className="text-sm font-medium">
           Market Cap: ${marketCapValue.toLocaleString()}
         </div>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <p className="text-xs text-muted-foreground truncate">{description}</p>
       </div>
     </Card>
   );
