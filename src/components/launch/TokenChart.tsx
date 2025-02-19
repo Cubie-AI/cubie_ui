@@ -91,7 +91,7 @@ export function TokenChart({ data }: TokenChartProps) {
 
     areaSeries.priceScale().applyOptions({
       scaleMargins: {
-        top: 0.4,
+        top: 0.69,
         bottom: 0.1,
       },
     });

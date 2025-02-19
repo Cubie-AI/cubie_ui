@@ -13,6 +13,18 @@ interface SignResponse {
   token: string;
 }
 
+async function getNonce(address: string) {
+  const { error, data } = await sendRequest<NonceResponse>(
+    `/api/auth/nonce?address=${address}`
+  );
+  if (!data?.nonce) {
+    toast.error(error || "Unable to fetch nonce for signing.");
+    return;
+  }
+  console.log("nonceData", data);
+  return data.nonce;
+}
+
 export function useCubieWallet() {
   const wallet = useWallet();
   const { connection } = useConnection();
@@ -21,22 +33,6 @@ export function useCubieWallet() {
   );
 
   const isSigning = useRef(false);
-  const getNonce = useCallback(async () => {
-    if (!wallet || !wallet.publicKey) {
-      toast.error("Wallet not connected");
-      return;
-    }
-
-    const { error, data } = await sendRequest<NonceResponse>(
-      `/api/auth/nonce?address=${wallet.publicKey.toBase58()}`
-    );
-    if (!data?.nonce) {
-      toast.error(error || "Unable to fetch nonce for signing.");
-      return;
-    }
-    console.log("nonceData", data);
-    return data.nonce;
-  }, [wallet]);
 
   const signIn = useCallback(async () => {
     if (!wallet || !wallet.signMessage || !wallet.publicKey) {
@@ -44,8 +40,9 @@ export function useCubieWallet() {
       return;
     }
 
-    const nonce = await getNonce();
+    const nonce = await getNonce(wallet.publicKey.toBase58());
     if (!nonce) {
+      wallet.disconnect();
       return;
     }
     try {
@@ -95,6 +92,7 @@ export function useCubieWallet() {
   };
 
   useEffect(() => {
+    console.log("wallet or token changed");
     if (wallet.connected && !token) {
       isSigning.current = true;
       signIn();
