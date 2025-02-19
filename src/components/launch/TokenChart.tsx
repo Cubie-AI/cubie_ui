@@ -15,6 +15,39 @@ interface TokenChartProps {
   data: PriceData[];
 }
 
+function filterOutliers(someArray: PriceData[]) {
+  // Copy the values, rather than operating on references to existing values
+  var values = someArray.concat();
+
+  // Then sort
+  values.sort(function (a, b) {
+    return a.price - b.price;
+  });
+
+  /* Then find a generous IQR. This is generous because if (values.length / 4)
+   * is not an int, then really you should average the two elements on either
+   * side to find q1.
+   */
+  var q1 = values[Math.floor(values.length / 4)];
+  // Likewise for q3.
+  var q3 = values[Math.ceil(values.length * (3 / 4))];
+  var iqr = q3.price - q1.price;
+
+  // Then find min and max values
+  var maxValue = q3.price + iqr * 1.5;
+  var minValue = q1.price - iqr * 1.5;
+
+  // Then filter anything beyond or beneath these values.
+  var filteredValues = values.filter(function (x) {
+    return x.price <= maxValue && x.price >= minValue;
+  });
+
+  // Then return
+  return filteredValues.map((x) => ({
+    time: x.time as UTCTimestamp,
+    value: x.price,
+  }));
+}
 export function TokenChart({ data }: TokenChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
 
@@ -42,10 +75,7 @@ export function TokenChart({ data }: TokenChartProps) {
       },
     });
 
-    const formattedData = data.map((item) => ({
-      time: item.time as UTCTimestamp,
-      value: item.price,
-    }));
+    const formattedData = filterOutliers(data);
 
     console.log(
       "First",

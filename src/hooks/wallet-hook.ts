@@ -21,7 +21,7 @@ export function useCubieWallet() {
   );
 
   const isSigning = useRef(false);
-  const getNonce = async () => {
+  const getNonce = useCallback(async () => {
     if (!wallet || !wallet.publicKey) {
       toast.error("Wallet not connected");
       return;
@@ -30,15 +30,13 @@ export function useCubieWallet() {
     const { error, data } = await sendRequest<NonceResponse>(
       `/api/auth/nonce?address=${wallet.publicKey.toBase58()}`
     );
-
     if (!data?.nonce) {
       toast.error(error || "Unable to fetch nonce for signing.");
       return;
     }
-
     console.log("nonceData", data);
     return data.nonce;
-  };
+  }, [wallet]);
 
   const signIn = useCallback(async () => {
     if (!wallet || !wallet.signMessage || !wallet.publicKey) {
@@ -72,22 +70,23 @@ export function useCubieWallet() {
       );
 
       if (error || !data) {
+        isSigning;
         toast.error(error || "Failed to sign in");
         wallet.disconnect();
         return;
       }
 
-      isSigning.current = false;
       setToken(data.token);
       localStorage.setItem("jwt", data.token);
       toast.success("Signed in successfully");
     } catch (error) {
-      isSigning.current = false;
       if (error instanceof WalletSignMessageError) {
         toast.error("User rejected the message");
         wallet.disconnect();
       }
     }
+
+    isSigning.current = false;
   }, [wallet]);
 
   const disconnect = async () => {
@@ -96,12 +95,7 @@ export function useCubieWallet() {
   };
 
   useEffect(() => {
-    if (
-      wallet.connected &&
-      !isSigning.current &&
-      !token &&
-      !wallet.connecting
-    ) {
+    if (wallet.connected && !isSigning.current && !token) {
       isSigning.current = true;
       signIn();
     } else if (wallet.disconnecting || !wallet.connected) {

@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useSocket } from "@/hooks/use-socket";
+import { useCubieWallet } from "@/hooks/wallet-hook";
 import { sendRequest } from "@/lib/utils";
 import { ArrowUpDown, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -38,6 +39,7 @@ interface Agent {
 type SortOption = "bump" | "marketCap" | "created";
 
 function HomePage() {
+  const { wallet: _wallet } = useCubieWallet();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("bump");
