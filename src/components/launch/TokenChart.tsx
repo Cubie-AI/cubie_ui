@@ -38,6 +38,7 @@ function filterOutliers(someArray: PriceData[]) {
     return x.price <= maxValue && x.price >= minValue;
   });
 
+  console.log(filteredValues);
   // Then return
   return filteredValues.map((x) => ({
     time: x.time as UTCTimestamp,
