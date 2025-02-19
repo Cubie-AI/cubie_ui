@@ -33,9 +33,11 @@ export function Comment({
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-sm text-muted-foreground">
-            {truncatedAddress}
-          </span>
+          <a href={`https://solscan.io/account/${address}`} target="_blank">
+            <span className="font-mono text-sm text-muted-foreground">
+              {truncatedAddress}
+            </span>
+          </a>
           {isDev && (
             <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
               dev
