@@ -17,7 +17,7 @@ interface TokenChartProps {
 
 function filterOutliers(someArray: PriceData[]) {
   // Copy the values, rather than operating on references to existing values
-  var values = someArray.concat();
+  var values = someArray;
 
   // Then sort
   values.sort(function (a, b) {
@@ -34,8 +34,8 @@ function filterOutliers(someArray: PriceData[]) {
   var iqr = q3.price - q1.price;
 
   // Then find min and max values
-  var maxValue = q3.price + iqr * 1.5;
-  var minValue = q1.price - iqr * 1.5;
+  var maxValue = q3.price + iqr * 3;
+  var minValue = q1.price - iqr * 3;
 
   // Then filter anything beyond or beneath these values.
   var filteredValues = values.filter(function (x) {
