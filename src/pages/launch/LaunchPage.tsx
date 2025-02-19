@@ -36,7 +36,7 @@ const DEFAULT_AGENT_STATE: AgentSettings = {
     password: "",
   },
   telegramConfig: {
-    bot_secret: "",
+    botToken: "",
     username: "",
   },
   twitterStyles: [],
@@ -394,12 +394,12 @@ function LaunchPage() {
                       />
                       <Input
                         placeholder="Bot Secret"
-                        value={agentState.telegramConfig.bot_secret}
+                        value={agentState.telegramConfig.botToken}
                         onChange={(e) =>
                           dispatch({
                             type: "set_telegram_config",
                             payload: {
-                              name: "bot_secret",
+                              name: "botToken",
                               value: e.target.value,
                             },
                           })

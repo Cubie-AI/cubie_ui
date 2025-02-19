@@ -36,9 +36,7 @@ export function validateAgentSettings(settings: AgentSettings) {
 
     if (
       enabledPlatforms.includes("telegram") &&
-      (!telegramConfig ||
-        !telegramConfig.bot_secret ||
-        !telegramConfig.username)
+      (!telegramConfig || !telegramConfig.botToken || !telegramConfig.username)
     ) {
       toast.error("Telegram config is missing");
       return false;

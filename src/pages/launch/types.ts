@@ -5,7 +5,7 @@ export interface TwitterConfig {
 }
 
 export interface TelegramConfig {
-  bot_secret: string;
+  botToken: string;
   username: string;
 }
 

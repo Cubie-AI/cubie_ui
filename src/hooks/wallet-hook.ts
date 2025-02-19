@@ -2,7 +2,7 @@ import { sendRequest } from "@/lib/utils";
 import { WalletSignMessageError } from "@solana/wallet-adapter-base";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import bs58 from "bs58";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 interface NonceResponse {
@@ -20,6 +20,7 @@ export function useCubieWallet() {
     localStorage.getItem("jwt") || null
   );
 
+  const isSigning = useRef(false);
   const getNonce = async () => {
     if (!wallet || !wallet.publicKey) {
       toast.error("Wallet not connected");
@@ -76,10 +77,12 @@ export function useCubieWallet() {
         return;
       }
 
+      isSigning.current = false;
       setToken(data.token);
       localStorage.setItem("jwt", data.token);
       toast.success("Signed in successfully");
     } catch (error) {
+      isSigning.current = false;
       if (error instanceof WalletSignMessageError) {
         toast.error("User rejected the message");
         wallet.disconnect();
@@ -93,12 +96,18 @@ export function useCubieWallet() {
   };
 
   useEffect(() => {
-    if (wallet.connected && !token) {
+    if (
+      wallet.connected &&
+      !isSigning.current &&
+      !token &&
+      !wallet.connecting
+    ) {
+      isSigning.current = true;
       signIn();
     } else if (wallet.disconnecting || !wallet.connected) {
       disconnect();
     }
-  }, [wallet]);
+  }, [wallet, token]);
 
   const value = useMemo(
     () => ({
