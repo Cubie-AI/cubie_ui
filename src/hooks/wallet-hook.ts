@@ -42,7 +42,6 @@ export function useCubieWallet() {
 
     const nonce = await getNonce(wallet.publicKey.toBase58());
     if (!nonce) {
-      wallet.disconnect();
       return;
     }
     try {
@@ -67,9 +66,7 @@ export function useCubieWallet() {
       );
 
       if (error || !data) {
-        isSigning;
         toast.error(error || "Failed to sign in");
-        wallet.disconnect();
         return;
       }
 
@@ -79,8 +76,8 @@ export function useCubieWallet() {
     } catch (error) {
       if (error instanceof WalletSignMessageError) {
         toast.error("User rejected the message");
-        wallet.disconnect();
       }
+      console.error(error);
     }
 
     isSigning.current = false;
@@ -93,7 +90,9 @@ export function useCubieWallet() {
 
   useEffect(() => {
     console.log("wallet or token changed");
-    if (wallet.connected && !token) {
+    if (token && !wallet.disconnecting) {
+      return;
+    } else if (wallet.connected && !token) {
       isSigning.current = true;
       signIn();
     } else if (wallet.disconnecting || !wallet.connected) {
