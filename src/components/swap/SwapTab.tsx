@@ -11,7 +11,13 @@ import { SwapSuccess } from "../toasts/LaunchSuccess";
 import { Quote, SwapTabProps } from "./types";
 import { fetchQuote } from "./util";
 
-export function SwapTab({ mint, type, decimals, placeholder }: SwapTabProps) {
+export function SwapTab({
+  mint,
+  type,
+  decimals,
+  placeholder,
+  slippage,
+}: SwapTabProps) {
   const { connection, token, wallet } = useCubieWallet();
   const [quote, setQuote] = useState<Quote | null>(null);
   const [outputAmount, setOutputAmount] = useState(0);
@@ -30,7 +36,7 @@ export function SwapTab({ mint, type, decimals, placeholder }: SwapTabProps) {
       return;
     }
 
-    const quote = await fetchQuote(type, amount, mint, token);
+    const quote = await fetchQuote(type, amount, mint, token, slippage);
     if (!quote) {
       toast.error("Unable to get swap quote");
       return;

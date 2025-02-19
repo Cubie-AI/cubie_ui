@@ -6,9 +6,10 @@ export async function fetchQuote(
   type: "buy" | "sell",
   uiAmount: string,
   mint: string,
-  token: string
+  token: string,
+  slippage: number
 ) {
-  const slippageBps = 50;
+  const slippageBps = Math.round(slippage * 100); // Convert percentage to basis points
   let inputMint = "So11111111111111111111111111111111111111112";
   let outputMint = mint;
   let amount = Math.floor(parseFloat(uiAmount) * 10 ** 9);

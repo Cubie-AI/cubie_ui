@@ -35,4 +35,5 @@ export interface SwapTabProps {
   type: "buy" | "sell";
   decimals: number;
   placeholder?: string;
+  slippage: number;
 }

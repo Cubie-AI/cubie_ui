@@ -95,7 +95,7 @@ export function useCubieWallet() {
   };
 
   useEffect(() => {
-    if (wallet.connected && !isSigning.current && !token) {
+    if (wallet.connected && !token) {
       isSigning.current = true;
       signIn();
     } else if (wallet.disconnecting || !wallet.connected) {
