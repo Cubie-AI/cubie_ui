@@ -33,6 +33,7 @@ function filterOutliers(someArray: PriceData[]) {
   var maxValue = midPoint.price * 3;
   var minValue = midPoint.price / 3;
 
+  console.log(midPoint, maxValue, minValue);
   // Then filter anything beyond or beneath these values.
   var filteredValues = values.filter(function (x) {
     return x.price <= maxValue && x.price >= minValue;
@@ -40,10 +41,12 @@ function filterOutliers(someArray: PriceData[]) {
 
   console.log(filteredValues);
   // Then return
-  return filteredValues.map((x) => ({
+  const result = filteredValues.map((x) => ({
     time: x.time as UTCTimestamp,
     value: x.price,
   }));
+  result.sort((a, b) => a.time - b.time);
+  return result;
 }
 export function TokenChart({ data }: TokenChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
