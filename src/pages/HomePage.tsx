@@ -20,7 +20,7 @@ interface Agent {
   id: number;
   name: string;
   ticker: string;
-  mintAddress: string;
+  mint: string;
   marketCapValue: number;
   photo: string;
   telegram?: string;
@@ -170,6 +170,7 @@ function HomePage() {
               <AgentCard
                 key={agent.id}
                 id={agent.id}
+                mint={agent.mint}
                 ticker={agent.ticker}
                 name={agent.name}
                 telegram={agent.telegram}

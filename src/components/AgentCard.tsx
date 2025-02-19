@@ -1,12 +1,13 @@
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { MessageCircle, Twitter } from "lucide-react";
+import { MessageCircle, Pill, Twitter } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface AgentCardProps {
   id: number;
   name: string;
+  mint: string;
   telegram?: string;
   twitter?: string;
   marketCapValue: number;
@@ -20,6 +21,7 @@ interface AgentCardProps {
 export function AgentCard({
   id,
   name,
+  mint,
   telegram,
   twitter,
   marketCapValue,
@@ -61,6 +63,15 @@ export function AgentCard({
             </span>
           </div>
           <div className="flex gap-2">
+            <a
+              href={`https://pump.fun/coin/${mint}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-primary"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Pill className="h-4 w-4" />
+            </a>
             {telegram && (
               <a
                 href={`https://t.me/${telegram}`}

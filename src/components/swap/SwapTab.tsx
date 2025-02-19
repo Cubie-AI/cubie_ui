@@ -17,6 +17,7 @@ export function SwapTab({
   decimals,
   placeholder,
   slippage,
+  updateBalance,
 }: SwapTabProps) {
   const { connection, token, wallet } = useCubieWallet();
   const [quote, setQuote] = useState<Quote | null>(null);
@@ -93,6 +94,22 @@ export function SwapTab({
         );
       }
 
+      // if type is buy we need to add outputAmount to tokenBalance and subtract normalized inAmount from solanaBalance
+      // if type is sell we need to add outputAmout to solanaBalance and subtract normalized inAmount from tokenBalance
+      const balances = {
+        solanaBalance: 0,
+        tokenBalance: 0,
+      };
+
+      console.log(outputAmount, quote.inAmount);
+      if (type === "buy") {
+        balances.solanaBalance = -amount;
+        balances.tokenBalance = outputAmount;
+      } else {
+        balances.solanaBalance = outputAmount;
+        balances.tokenBalance = -amount;
+      }
+      updateBalance(balances);
       toast.success(() => <SwapSuccess signature={signature} />);
     } catch (error) {
       console.log(error);
@@ -114,6 +131,7 @@ export function SwapTab({
         placeholder={placeholder}
         value={amount}
         onChange={(e) => handleInputChange(e.target.value)}
+        className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
       />
       <Button className="w-full" size="lg" onClick={() => getTransaction()}>
         {type === "buy" ? "Buy" : "Sell"}

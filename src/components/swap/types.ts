@@ -30,10 +30,18 @@ export interface Quote {
   timeTaken: number;
 }
 
+export interface BalanceStateParams {
+  solanaBalance: string;
+  tokenBalance: string;
+}
 export interface SwapTabProps {
   mint: string;
   type: "buy" | "sell";
   decimals: number;
   placeholder?: string;
   slippage: number;
+  updateBalance: (params: {
+    solanaBalance: number;
+    tokenBalance: number;
+  }) => void;
 }
