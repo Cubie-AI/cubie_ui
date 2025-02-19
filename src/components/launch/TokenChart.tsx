@@ -17,7 +17,7 @@ interface TokenChartProps {
 
 function filterOutliers(someArray: PriceData[]) {
   // Copy the values, rather than operating on references to existing values
-  var values = someArray;
+  var values = someArray.concat();
 
   // Then sort
   values.sort(function (a, b) {
