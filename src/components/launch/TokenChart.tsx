@@ -28,14 +28,10 @@ function filterOutliers(someArray: PriceData[]) {
    * is not an int, then really you should average the two elements on either
    * side to find q1.
    */
-  var q1 = values[Math.floor(values.length / 4)];
-  // Likewise for q3.
-  var q3 = values[Math.ceil(values.length * (3 / 4))];
-  var iqr = q3.price - q1.price;
-
+  var midPoint = values[Math.floor(values.length / 2)];
   // Then find min and max values
-  var maxValue = q3.price + iqr * 3;
-  var minValue = q1.price - iqr * 3;
+  var maxValue = midPoint.price * 3;
+  var minValue = midPoint.price / 3;
 
   // Then filter anything beyond or beneath these values.
   var filteredValues = values.filter(function (x) {
