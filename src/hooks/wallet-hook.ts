@@ -86,9 +86,7 @@ export function useCubieWallet() {
 
   useEffect(() => {
     console.log("wallet or token changed");
-    if (token && !wallet.disconnecting) {
-      return;
-    } else if (wallet.connected && !token) {
+    if (wallet.connected && !token) {
       signIn();
     } else if (wallet.disconnecting || !wallet.connected) {
       disconnect();
