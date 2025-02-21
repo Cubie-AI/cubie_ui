@@ -12,12 +12,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { UploadDropzone } from "@/components/ui/upload-dropzone";
 import { useCubieWallet } from "@/hooks/wallet-hook";
 import { cn, sendRequest } from "@/lib/utils";
 import { SendTransactionError, VersionedTransaction } from "@solana/web3.js";
 import { Buffer } from "buffer";
-import { ArrowLeft, Rocket } from "lucide-react";
+import { ArrowLeft, HelpCircle, Rocket } from "lucide-react";
 import { useCallback, useMemo, useReducer } from "react";
 import { toast } from "sonner";
 import { agentReducer } from "./reducer";
@@ -28,6 +34,7 @@ const DEFAULT_AGENT_STATE: AgentSettings = {
   name: "",
   ticker: "",
   bio: "",
+  api: "",
   knowledge: [],
   enabledPlatforms: [],
   twitterConfig: {
@@ -243,6 +250,57 @@ function LaunchPage() {
                 dispatch={dispatch}
                 placeholder="Very good at deploying agents on-chain..."
               />
+
+              {/* API Endpoint Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="useApi"
+                    checked={!!agentState.api}
+                    onCheckedChange={(checked) => {
+                      dispatch({
+                        type: "set_field",
+                        payload: {
+                          name: "api",
+                          value: checked ? "https://" : "",
+                        },
+                      });
+                    }}
+                  />
+                  <Label htmlFor="useApi" className="flex items-center gap-2">
+                    External API Endpoint
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          You can specify an external data endpoint that
+                          provides a JSON response with the following structure:{" "}
+                          {"{data: string}"}. This endpoint is called everytime
+                          your agent is queried and it is used to provide it
+                          with dynamic knowledge.
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </Label>
+                </div>
+
+                <Input
+                  placeholder="https://your-data.com/api"
+                  value={agentState.api}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "set_field",
+                      payload: {
+                        name: "api",
+                        value: e.target.value,
+                      },
+                    })
+                  }
+                  disabled={!agentState.api}
+                />
+              </div>
 
               <div className="border-t pt-8" />
 

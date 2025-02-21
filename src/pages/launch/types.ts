@@ -18,6 +18,7 @@ export interface AgentSettings {
   name: string;
   ticker: string;
   bio: string;
+  api: string;
   knowledge: string[];
   style: string[];
   enabledPlatforms: string[];

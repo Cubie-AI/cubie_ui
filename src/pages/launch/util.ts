@@ -65,6 +65,7 @@ export function buildAgentFormData(settings: AgentSettings) {
   formData.append("name", settings.name);
   formData.append("ticker", settings.ticker);
   formData.append("bio", settings.bio);
+  formData.append("api", settings.api);
   formData.append("devBuy", settings.buyAmount);
   if (settings.image) {
     formData.append("image", settings.image);

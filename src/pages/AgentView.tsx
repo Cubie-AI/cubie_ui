@@ -1,13 +1,26 @@
+import { CharacterDisplay } from "@/components/CharacterDisplay";
 import { CommentCard } from "@/components/comment/CommentCard";
 import { CopyButton } from "@/components/CopyButton";
 import { TokenChart } from "@/components/launch/TokenChart";
 import { Swap } from "@/components/swap/Swap";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { sendRequest } from "@/lib/utils";
-import { ArrowLeft, MessageCircle, Pill, Twitter } from "lucide-react";
+import {
+  ArrowLeft,
+  MessageCircle,
+  Pill,
+  TextSearch,
+  Twitter,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -19,6 +32,7 @@ interface Agent {
   owner: string;
   photo: string;
   bio: string;
+  character: string | null;
   twitter: string | null;
   telegram: string | null;
   history: {
@@ -42,6 +56,7 @@ function AgentView() {
   const navigate = useNavigate();
   const [agent, setAgent] = useState<Agent | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showCharacter, setShowCharacter] = useState(false);
 
   useEffect(() => {
     const getAgent = async () => {
@@ -153,6 +168,14 @@ function AgentView() {
                     pump.fun
                   </a>
                 </Button>
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                  onClick={() => setShowCharacter(true)}
+                >
+                  <TextSearch className="h-4 w-4 mr-2" />
+                  character
+                </Button>
               </div>
             </div>
 
@@ -204,6 +227,15 @@ function AgentView() {
             />
           </div>
         </Card>
+
+        <Dialog open={showCharacter} onOpenChange={setShowCharacter}>
+          <DialogContent className="max-w-5xl">
+            <DialogHeader>
+              <DialogTitle>Character Description</DialogTitle>
+            </DialogHeader>
+            <CharacterDisplay character={agent.character} />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
