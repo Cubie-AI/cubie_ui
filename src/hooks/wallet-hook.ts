@@ -95,7 +95,7 @@ export function useCubieWallet() {
     } else if (wallet.disconnecting) {
       disconnect();
     }
-  }, [wallet.connected, token]);
+  }, [wallet.connected, token, wallet.disconnecting]);
 
   const value = useMemo(
     () => ({
