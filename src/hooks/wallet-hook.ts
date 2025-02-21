@@ -29,12 +29,16 @@ export function useCubieWallet() {
   const wallet = useWallet();
   const { connection } = useConnection();
   const [token, setToken] = useState<string | null>(
-    localStorage.getItem("jwt") || null
+    localStorage.getItem("jwt") ?? null
   );
 
   const signIn = useCallback(async () => {
     if (!wallet || !wallet.signMessage || !wallet.publicKey) {
       toast.error("Wallet not connected");
+      return;
+    }
+
+    if (token || localStorage.getItem("jwt")) {
       return;
     }
 
@@ -77,7 +81,7 @@ export function useCubieWallet() {
       }
       console.error(error);
     }
-  }, [wallet]);
+  }, [wallet, token]);
 
   const disconnect = async () => {
     setToken(null);
@@ -88,7 +92,7 @@ export function useCubieWallet() {
     console.log("wallet or token changed");
     if (wallet.connected && !token) {
       signIn();
-    } else if (wallet.disconnecting || !wallet.connected) {
+    } else if (wallet.disconnecting) {
       disconnect();
     }
   }, [wallet.connected, token]);
