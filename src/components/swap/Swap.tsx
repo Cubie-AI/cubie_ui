@@ -30,10 +30,7 @@ export function Swap({ mint, ticker }: SwapProps) {
       if (!wallet || !wallet.publicKey) {
         return;
       }
-      const address = new PublicKey(
-        "7cbczzhHT6MZ7L8tCHmWwyeBrphCXCupsJAyE23ycuSx"
-      );
-
+      const address = wallet.publicKey;
       const [associatedAddress] = PublicKey.findProgramAddressSync(
         [
           wallet.publicKey?.toBuffer(),
