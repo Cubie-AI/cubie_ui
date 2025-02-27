@@ -19,6 +19,7 @@ export interface AgentSettings {
   ticker: string;
   bio: string;
   api: string;
+  platform: "pump" | "gfm";
   knowledge: string[];
   style: string[];
   enabledPlatforms: string[];

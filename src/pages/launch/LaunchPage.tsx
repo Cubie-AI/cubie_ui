@@ -11,6 +11,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
@@ -35,6 +36,7 @@ const DEFAULT_AGENT_STATE: AgentSettings = {
   ticker: "",
   bio: "",
   api: "",
+  platform: "pump",
   knowledge: [],
   enabledPlatforms: [],
   twitterConfig: {
@@ -492,6 +494,7 @@ function LaunchPage() {
                     Enter the amount of SOL you want to spend
                   </p>
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="buyAmount">Buy</Label>
                   <Input
@@ -511,6 +514,32 @@ function LaunchPage() {
                     step="0.01"
                     min="0"
                   />
+                </div>
+                {/* Platform Selection */}
+                <div className="flex justify-center space-y-4">
+                  <RadioGroup
+                    defaultValue="pump"
+                    value={agentState.platform}
+                    onValueChange={(value) =>
+                      dispatch({
+                        type: "set_field",
+                        payload: {
+                          name: "platform",
+                          value,
+                        },
+                      })
+                    }
+                    className="flex gap-8"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="pump" id="pump" />
+                      <Label htmlFor="pump">pump.fun</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="gfm" id="gofund" />
+                      <Label htmlFor="gofund">gofund.memes</Label>
+                    </div>
+                  </RadioGroup>
                 </div>
               </div>
             </CardContent>
