@@ -16,7 +16,7 @@ export function CubieWalletProvider({
   children: React.ReactNode;
 }) {
   const endpoint =
-    "https://palpable-flashy-water.solana-mainnet.quiknode.pro/a24d45a88242df8cc4f32c8070df47b66e287c25";
+    "https://alpha-ancient-gadget.solana-mainnet.quiknode.pro/46813a83659fb92a05018b2351091382e5a4fbb1/";
   const supportedWallets = useMemo(() => [], []);
 
   return (
@@ -24,7 +24,7 @@ export function CubieWalletProvider({
       endpoint={endpoint}
       config={{
         wsEndpoint:
-          "wss://palpable-flashy-water.solana-mainnet.quiknode.pro/a24d45a88242df8cc4f32c8070df47b66e287c25",
+          "wss://alpha-ancient-gadget.solana-mainnet.quiknode.pro/46813a83659fb92a05018b2351091382e5a4fbb1/",
       }}
     >
       <WalletProvider wallets={supportedWallets} autoConnect={true}>
