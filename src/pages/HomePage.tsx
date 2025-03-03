@@ -115,10 +115,14 @@ function HomePage() {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top Half */}
       <div className="flex-1 min-h-[50vh] flex flex-col items-center justify-center p-4">
-        <h1 className="text-4xl md:text-6xl font-bold mb-6">$MAIAR x $CUBIE</h1>
+        <h1 className="text-4xl md:text-6xl font-bold ">CUBIE</h1>
         <div className="text-center">
+          <p className="text-sm text-muted-foreground font-mono mb-6 space-y-4">
+            powered by $MAIAR
+          </p>
+
           <p className="text-sm text-muted-foreground font-mono mb-2">
-            ca: 2MH8ga3TuLvuvX2GUtVRS2BS8B9ujZo3bj5QeAkMpump
+            2MH8ga3TuLvuvX2GUtVRS2BS8B9ujZo3bj5QeAkMpump
           </p>
         </div>
         <Button
