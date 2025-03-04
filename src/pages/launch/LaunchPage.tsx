@@ -537,7 +537,7 @@ function LaunchPage() {
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="gfm" id="gofund" />
-                      <Label htmlFor="gofund">gofund.memes</Label>
+                      <Label htmlFor="gofund">gofundmeme.io</Label>
                     </div>
                   </RadioGroup>
                 </div>
